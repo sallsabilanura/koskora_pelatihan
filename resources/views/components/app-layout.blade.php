@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="theme-color" content="#1e1b9b">
+
+        <title>KosKora — Platform Manajemen Kos Modern</title>
+        <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    
+        <!-- Fonts & Icons -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+        
+        <!-- Design System & Logic -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <link rel="stylesheet" href="{{ asset('dashboard.css') }}">
+        
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            'brand': '#1e1b9b',
+                            'brand-dark': '#14126d',
+                            'brand-light': '#f0f1ff',
+                        },
+                        fontFamily: {
+                            sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+                        },
+                        borderRadius: {
+                            'premium': '16px',
+                        }
+                    }
+                }
+            }
+        </script>
+        <style type="text/tailwindcss">
+            @layer utilities {
+                .bnav-item {
+                    @apply flex flex-col items-center gap-1 text-[10.4px] font-medium text-slate-500 transition-colors duration-200;
+                }
+                .bnav-item.active {
+                    @apply text-brand;
+                }
+                .bnav-item:hover {
+                    @apply text-brand;
+                }
+                .bnav-icon {
+                    @apply text-xl mb-0.5;
+                }
+            }
+        </style>
+    </head>
+    <body class="font-sans antialiased selection:bg-brand/10 selection:text-brand bg-slate-50 text-slate-600">
+        <div class="flex min-h-screen overflow-hidden bg-slate-50">
+            <!-- Sidebar Overlay (mobile) -->
+            @if(!in_array(auth()->user()->role, ['user', 'laundry', 'cleaner']))
+            <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/20 backdrop-blur-[2px] z-30 opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden" onclick="closeSidebar()"></div>
+            @endif
+
+            <!-- Sidebar Navigation -->
+            @if(in_array(auth()->user()->role, ['user', 'laundry', 'cleaner']))
+                <div class="hidden lg:block">
+                    <x-sidebar />
+                </div>
+            @else
+                <x-sidebar />
+            @endif
+
+            <!-- Main Panel -->
+            <div class="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto overflow-x-hidden relative bg-slate-50">
+                {{-- Navbar (Premium & Sticky) --}}
+                <nav class="flex items-center px-4 md:px-8 py-4 bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-20">
+                    {{-- Mobile Hamburger --}}
+                    @if(!in_array(auth()->user()->role, ['user', 'laundry', 'cleaner', 'admin', 'superadmin']))
+                    <button class="lg:hidden w-10 h-10 flex items-center justify-center text-slate-400 hover:text-brand transition-colors mr-4" onclick="toggleSidebar()">
+                        <i class="fas fa-bars-staggered"></i>
+                    </button>
+                    @endif
+
+                    {{-- Page Context --}}
+                    <div class="flex-1">
+                        @if(in_array(auth()->user()->role, ['user', 'laundry', 'cleaner', 'admin', 'superadmin']))
+                            {{-- On mobile, show logo; on desktop, show title text --}}
+                            <div class="block lg:hidden">
+                                <img src="{{ asset('koskora.png') }}" alt="KosKora" class="h-8 w-auto">
+                            </div>
+                            <div class="hidden lg:block">
+                                <h1 class="text-lg font-semibold text-slate-800 tracking-tight">@yield('header_title', 'Dashboard')</h1>
+                            </div>
+                        @else
+                            <h1 class="text-lg font-semibold text-slate-800 tracking-tight">@yield('header_title', 'Dashboard')</h1>
+                        @endif
+                    </div>
+
+                    {{-- Top Actions --}}
+                    <div class="flex items-center gap-2 sm:gap-4">
+                        {{-- Notifications --}}
+                        <button class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-brand transition-all relative group">
+                            <i class="far fa-bell text-lg transition-transform group-hover:rotate-12"></i>
+                            <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
+                        </button>
+
+                        {{-- Mobile Logout for User / Partner roles --}}
+                        @if(in_array(auth()->user()->role, ['user', 'laundry', 'cleaner', 'admin', 'superadmin']))
+                        <form method="POST" action="{{ route('admin.logout') }}" class="block lg:hidden m-0 p-0">
+                            @csrf
+                            <button type="submit" onclick="return confirm('Keluar dari aplikasi?')" class="w-10 h-10 rounded-xl flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-500 transition-all">
+                                <i class="fas fa-sign-out-alt text-lg"></i>
+                            </button>
+                        </form>
+                        @endif
+
+                        {{-- User Quick Access --}}
+                        <div class="hidden sm:flex items-center gap-3 pl-4 border-l border-slate-100">
+                            <div class="text-right">
+                                <div class="text-[12px] font-bold text-slate-800 leading-none capitalize">{{ auth()->user()->name }}</div>
+                                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mt-1 opacity-80">{{ auth()->user()->role }}</div>
+                            </div>
+                            <div class="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center font-bold text-xs border border-brand/20 shadow-sm">
+                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Page Content Ecosystem -->
+                <main class="p-4 md:p-8 flex-1 {{ in_array(auth()->user()->role, ['user', 'laundry', 'cleaner', 'admin', 'superadmin']) ? 'pb-24' : '' }}">
+                    {{ $slot }}
+                </main>
+            </div>
+        </div>
+
+        {{-- ===== GLOBAL BOTTOM NAV (User Role) ===== --}}
+        @if(auth()->user()->role === 'user')
+        <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around px-4 pt-2 pb-6 z-50 lg:hidden">
+            <a href="#" class="bnav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                <i class="fas fa-home-alt bnav-icon"></i>
+                <span>Home</span>
+            </a>
+            <a href="#" class="bnav-item {{ request()->routeIs('rent-payments.my-payments') ? 'active' : '' }}">
+                <i class="fas fa-file-invoice-dollar bnav-icon"></i>
+                <span>Tagihan</span>
+            </a>
+            <a href="#" class="bnav-item relative -top-5">
+                <div class="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center text-xl shadow-[0_4px_10px_0_rgba(30,27,155,0.3)] border-[3px] border-slate-50 transition-transform duration-200 hover:scale-105">
+                    <i class="fas fa-concierge-bell"></i>
+                </div>
+                <span class="mt-1">Layanan</span>
+            </a>
+            <a href="#" class="bnav-item {{ request()->routeIs('user.announcements.*') ? 'active' : '' }}">
+                <i class="fas fa-bullhorn bnav-icon"></i>
+                <span>Info</span>
+            </a>
+            <a href="#" class="bnav-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+                <i class="fas fa-user bnav-icon"></i>
+                <span>Profil</span>
+            </a>
+        </nav>
+        @endif
+
+        {{-- ===== BOTTOM NAV: LAUNDRY PARTNER ===== --}}
+        @if(auth()->user()->role === 'laundry')
+        <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around px-4 pt-2 pb-6 z-50 lg:hidden">
+            <a href="#" class="bnav-item {{ request()->routeIs('laundry.orders.*') ? 'active' : '' }}">
+                <i class="fas fa-list-check bnav-icon"></i>
+                <span>Pesanan</span>
+            </a>
+            <a href="#" class="bnav-item relative -top-5 {{ request()->routeIs('laundry.services.*') ? 'active' : '' }}">
+                <div class="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center text-xl shadow-[0_4px_10px_0_rgba(30,27,155,0.3)] border-[3px] border-slate-50 transition-transform duration-200 hover:scale-105">
+                    <i class="fas fa-soap"></i>
+                </div>
+                <span class="mt-1">Layanan</span>
+            </a>
+            <a href="#" class="bnav-item {{ request()->routeIs('laundry.withdrawals.*') ? 'active' : '' }}">
+                <i class="fas fa-wallet bnav-icon"></i>
+                <span>Saldo</span>
+            </a>
+        </nav>
+        @endif
+
+        {{-- ===== BOTTOM NAV: CLEANER PARTNER ===== --}}
+        @if(auth()->user()->role === 'cleaner')
+        <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around px-4 pt-2 pb-6 z-50 lg:hidden">
+            <a href="#" class="bnav-item {{ request()->routeIs('cleaner.orders.*') ? 'active' : '' }}">
+                <i class="fas fa-list-check bnav-icon"></i>
+                <span>Tugas</span>
+            </a>
+            <a href="#" class="bnav-item relative -top-5">
+                <div class="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center text-xl shadow-[0_4px_10px_0_rgba(30,27,155,0.3)] border-[3px] border-slate-50 transition-transform duration-200 hover:scale-105">
+                    <i class="fas fa-broom"></i>
+                </div>
+                <span class="mt-1">Beranda</span>
+            </a>
+            <a href="#" class="bnav-item {{ request()->routeIs('cleaner.withdrawals.*') ? 'active' : '' }}">
+                <i class="fas fa-wallet bnav-icon"></i>
+                <span>Saldo</span>
+            </a>
+        </nav>
+        @endif
+
+        {{-- ===== BOTTOM NAV: ADMIN & SUPER ADMIN ===== --}}
+        @if(method_exists(auth()->user(), 'isAnyAdmin') && auth()->user()->isAnyAdmin())
+        <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around px-4 pt-2 pb-6 z-50 lg:hidden">
+            <a href="{{ route('admin.dashboard') }}" class="bnav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                <i class="fas fa-home-alt bnav-icon"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="bnav-item {{ request()->routeIs('rooms.*') ? 'active' : '' }}">
+                <i class="fas fa-door-open bnav-icon"></i>
+                <span>Kamar</span>
+            </a>
+            <a href="javascript:void(0)" onclick="toggleSidebar()" class="bnav-item relative -top-5">
+                <div class="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center text-xl shadow-[0_4px_10px_0_rgba(30,27,155,0.3)] border-[3px] border-slate-50 transition-transform duration-200 hover:scale-105">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <span class="mt-1">Lainnya</span>
+            </a>
+            <a href="#" class="bnav-item {{ request()->routeIs('tenants.*') ? 'active' : '' }}">
+                <i class="fas fa-user-friends bnav-icon"></i>
+                <span>Penyewa</span>
+            </a>
+            <a href="#" class="bnav-item {{ request()->routeIs('rent-payments.*') ? 'active' : '' }}">
+                <i class="fas fa-credit-card bnav-icon"></i>
+                <span>Bayar</span>
+            </a>
+        </nav>
+        @endif
+
+        <!-- Layout Interaction Scripts -->
+        <script>
+            function toggleSidebar() {
+                const sb = document.getElementById('sidebar');
+                const ov = document.getElementById('sidebarOverlay');
+                if (sb) {
+                    sb.classList.toggle('-translate-x-full');
+                }
+                if (ov) {
+                    ov.classList.toggle('opacity-0');
+                    ov.classList.toggle('pointer-events-none');
+                }
+            }
+            function closeSidebar() {
+                const sb = document.getElementById('sidebar');
+                const ov = document.getElementById('sidebarOverlay');
+                if (sb && !sb.classList.contains('-translate-x-full')) {
+                    sb.classList.add('-translate-x-full');
+                }
+                if (ov && !ov.classList.contains('opacity-0')) {
+                    ov.classList.add('opacity-0');
+                    ov.classList.add('pointer-events-none');
+                }
+            }
+        </script>
+        @stack('scripts')
+    </body>
+</html>

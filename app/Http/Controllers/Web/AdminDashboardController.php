@@ -18,6 +18,21 @@ class AdminDashboardController extends Controller
             abort(403, 'Unauthorized access. Admins only.');
         }
 
-        return view('admin.dashboard');
+        $totalRooms = \App\Models\Room::count();
+        $availableRooms = \App\Models\Room::where('status', 'available')->count();
+        $totalTenants = \App\Models\Tenant::count();
+        $totalRevenue = \App\Models\Payment::where('status', 'paid')->sum('amount');
+        
+        $recentPayments = \App\Models\Payment::with(['rental.tenant', 'rental.roomRental.room'])->latest()->take(5)->get();
+        $announcementsCount = 0;
+
+        return view('admin.dashboard', compact(
+            'totalRooms',
+            'availableRooms',
+            'totalTenants',
+            'totalRevenue',
+            'recentPayments',
+            'announcementsCount'
+        ));
     }
 }

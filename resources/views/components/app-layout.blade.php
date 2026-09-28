@@ -7,18 +7,30 @@
         <meta name="theme-color" content="#1e1b9b">
 
         <title>KosKora — Platform Manajemen Kos Modern</title>
-        <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+        <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}?v=2">
     
         <!-- Fonts & Icons -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
         
         <!-- Design System & Logic -->
         <script src="https://cdn.tailwindcss.com"></script>
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-        <link rel="stylesheet" href="{{ asset('dashboard.css') }}">
+        <link rel="stylesheet" href="{{ asset('dashboard.css') }}?v={{ time() }}">
+        
+        <style>
+            /* Force all tables to stretch 100% */
+            .table-wrap, .overflow-x-auto { width: 100% !important; min-width: 100% !important; }
+            .data-table { width: 100% !important; min-width: 100% !important; }
+            
+            /* Remove rounded corners from table headers that cause hanging edges */
+            .data-table th, .data-table th:first-child, .data-table th:last-child {
+                border-top-left-radius: 0 !important;
+                border-top-right-radius: 0 !important;
+            }
+        </style>
         
         <script>
             tailwind.config = {
@@ -30,7 +42,7 @@
                             'brand-light': '#f0f1ff',
                         },
                         fontFamily: {
-                            sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+                            sans: ['Nunito', 'ui-sans-serif', 'system-ui'],
                         },
                         borderRadius: {
                             'premium': '16px',
@@ -108,7 +120,7 @@
 
                         {{-- Mobile Logout for User / Partner roles --}}
                         @if(in_array(auth()->user()->role, ['user', 'laundry', 'cleaner', 'admin', 'superadmin']))
-                        <form method="POST" action="{{ route('admin.logout') }}" class="block lg:hidden m-0 p-0">
+                        <form method="POST" action="{{ route('admin.logout') }}" class="block sm:hidden m-0 p-0">
                             @csrf
                             <button type="submit" onclick="return confirm('Keluar dari aplikasi?')" class="w-10 h-10 rounded-xl flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-500 transition-all">
                                 <i class="fas fa-sign-out-alt text-lg"></i>
@@ -116,14 +128,41 @@
                         </form>
                         @endif
 
-                        {{-- User Quick Access --}}
-                        <div class="hidden sm:flex items-center gap-3 pl-4 border-l border-slate-100">
-                            <div class="text-right">
-                                <div class="text-[12px] font-bold text-slate-800 leading-none capitalize">{{ auth()->user()->name }}</div>
-                                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mt-1 opacity-80">{{ auth()->user()->role }}</div>
-                            </div>
-                            <div class="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center font-bold text-xs border border-brand/20 shadow-sm">
-                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                        {{-- User Quick Access with Dropdown --}}
+                        <div class="hidden sm:flex items-center pl-4 border-l border-slate-100 relative" x-data="{ openProfile: false }">
+                            <button @click="openProfile = !openProfile" @click.away="openProfile = false" class="flex items-center gap-3 focus:outline-none text-left rounded-xl hover:bg-slate-50 p-1 -mr-1 transition-colors">
+                                <div class="text-right">
+                                    <div class="text-[12px] font-bold text-slate-800 leading-none capitalize">{{ auth()->user()->name }}</div>
+                                    <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mt-1 opacity-80">{{ auth()->user()->role }}</div>
+                                </div>
+                                <div class="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center font-bold text-xs border border-brand/20 shadow-sm transition-colors">
+                                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                </div>
+                                <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" :class="openProfile ? 'rotate-180' : ''"></i>
+                            </button>
+
+                            {{-- Dropdown Menu --}}
+                            <div x-show="openProfile" 
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="transform opacity-0 scale-95"
+                                 x-transition:enter-end="transform opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="transform opacity-100 scale-100"
+                                 x-transition:leave-end="transform opacity-0 scale-95"
+                                 class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-50 overflow-hidden"
+                                 style="display: none;">
+                                
+                                <div class="px-4 py-2 border-b border-slate-50 mb-1">
+                                    <p class="text-xs text-slate-500">Masuk sebagai</p>
+                                    <p class="text-sm font-semibold text-slate-800 truncate">{{ auth()->user()->email }}</p>
+                                </div>
+
+                                <form method="POST" action="{{ route('admin.logout') }}" class="m-0 p-0">
+                                    @csrf
+                                    <button type="submit" class="w-full text-left px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors flex items-center gap-2">
+                                        <i class="fas fa-sign-out-alt w-4"></i> Keluar
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>

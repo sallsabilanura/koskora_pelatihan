@@ -11,17 +11,22 @@ class RoomRentalController extends Controller
 {
     public function index(Request $request)
     {
-        $query = RoomRental::query();
+        $query = Room::with('roomRentals', 'property')->whereHas('roomRentals');
+        
         if ($request->filled('search')) {
-            $query->where('rental_type', 'like', '%' . $request->search . '%');
+            $query->whereHas('roomRentals', function($q) use ($request) {
+                $q->where('rental_type', 'like', '%' . $request->search . '%');
+            })->orWhere('room_number', 'like', '%' . $request->search . '%');
         }
-        $roomRentals = $query->latest()->paginate(10);
-        return view('admin.room-rentals.index', compact('roomRentals'));
+        
+        $rooms = $query->sortable()->paginate(10);
+        $allRooms = Room::with('property')->get();
+        return view('admin.room-rentals.index', compact('rooms', 'allRooms'));
     }
 
     public function create()
     {
-        $rooms = Room::all();
+        $rooms = Room::with('property')->get();
         return view('admin.room-rentals.create', compact('rooms'));
     }
 
@@ -50,7 +55,16 @@ class RoomRentalController extends Controller
 
     public function update(Request $request, string $id)
     {
-        //
+        $validated = $request->validate([
+            'room_id' => 'required|exists:rooms,id',
+            'rental_type' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        $rental = RoomRental::findOrFail($id);
+        $rental->update($validated);
+
+        return redirect()->route('admin.room-rentals.index')->with('success', 'Tipe sewa berhasil diperbarui.');
     }
 
     public function destroy(string $id)

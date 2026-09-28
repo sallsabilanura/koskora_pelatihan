@@ -3,21 +3,27 @@
 
     <div class="space-y-6 animate-fade-in">
         {{-- ===== BREADCRUMB ===== --}}
-        <nav class="flex text-sm text-slate-500 items-center gap-2">
-            <a href="{{ route('admin.dashboard') }}" class="hover:text-brand transition-colors">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <span><i class="fas fa-chevron-right text-xs"></i></span>
-            <a href="{{ route('admin.room-rentals.index') }}" class="hover:text-brand transition-colors">
-                Tipe Harga Sewa Kamar
-            </a>
-            <span><i class="fas fa-chevron-right text-xs"></i></span>
-            <span class="text-slate-900 font-medium">Tambah</span>
-        </nav>
+        <div class="bg-white border-b border-slate-200 px-4 md:px-8 py-4 -mx-4 md:-mx-8 -mt-4 md:-mt-8 flex items-center">
+            <nav class="flex text-sm text-slate-500 items-center gap-2">
+                <a href="{{ route('admin.dashboard') }}" class="hover:text-brand transition-colors">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <span><i class="fas fa-chevron-right text-[10px]"></i></span>
+                <a href="{{ route('admin.room-rentals.index') }}" class="hover:text-brand transition-colors">
+                    Tipe Harga Sewa
+                </a>
+                <span><i class="fas fa-chevron-right text-[10px]"></i></span>
+                <span class="text-slate-900 font-medium">Tambah</span>
+            </nav>
+        </div>
 
-        <div class="max-w-4xl mx-auto">
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6 md:p-8">
-                <form action="{{ route('admin.room-rentals.store') }}" method="POST" class="space-y-6">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-slate-100">
+                <h2 class="text-lg font-semibold text-slate-800">Informasi Tipe Harga Sewa</h2>
+                <p class="text-sm text-slate-500 mt-1">Tambahkan tipe sewa untuk kamar yang tersedia.</p>
+            </div>
+
+            <form action="{{ route('admin.room-rentals.store') }}" method="POST" class="px-6 pt-2 pb-6 space-y-5">
                     @csrf
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -27,7 +33,7 @@
                                 <option value="" disabled selected>Pilih Kamar</option>
                                 @foreach($rooms as $room)
                                     <option value="{{ $room->id }}" {{ old('room_id') == $room->id ? 'selected' : '' }}>
-                                        Kamar #{{ $room->room_number }}
+                                        Kamar #{{ $room->room_number }} - {{ $room->property->name ?? 'KosKora' }}
                                     </option>
                                 @endforeach
                             </select>
@@ -55,10 +61,9 @@
 
                     <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
                         <a href="{{ route('admin.room-rentals.index') }}" class="btn btn-ghost">Batal</a>
-                        <button type="submit" class="btn btn-primary">Simpan Tipe Sewa</button>
+                        <button type="submit" class="btn bg-brand text-white hover:bg-brand-dark rounded-xl px-5">Simpan Tipe Sewa</button>
                     </div>
                 </form>
-            </div>
         </div>
     </div>
 </x-app-layout>

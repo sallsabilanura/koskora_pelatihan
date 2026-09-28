@@ -7,16 +7,19 @@ use Illuminate\Http\Request;
 
 class PropertyController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $properties = \App\Models\Property::with('user')->latest()->paginate(10);
-        return view('admin.properties.index', compact('properties'));
-    }
+        $query = \App\Models\Property::with('user')->withCount('rooms');
+        
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('address', 'like', '%' . $request->search . '%');
+        }
 
-    public function create()
-    {
+        $properties = $query->sortable()->paginate(10);
         $users = \App\Models\User::all();
-        return view('admin.properties.create', compact('users'));
+        
+        return view('admin.properties.index', compact('properties', 'users'));
     }
 
     public function store(Request $request)
@@ -31,19 +34,6 @@ class PropertyController extends Controller
         \App\Models\Property::create($validated);
 
         return redirect()->route('admin.properties.index')->with('success', 'Properti berhasil ditambahkan.');
-    }
-
-    public function show(string $id)
-    {
-        $property = \App\Models\Property::with('user')->findOrFail($id);
-        return view('admin.properties.show', compact('property'));
-    }
-
-    public function edit(string $id)
-    {
-        $property = \App\Models\Property::findOrFail($id);
-        $users = \App\Models\User::all();
-        return view('admin.properties.edit', compact('property', 'users'));
     }
 
     public function update(Request $request, string $id)

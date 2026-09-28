@@ -3,19 +3,23 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Facility;
 use Illuminate\Http\Request;
 
 class FacilityController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $facilities = \App\Models\Facility::latest()->paginate(10);
-        return view('admin.facilities.index', compact('facilities'));
-    }
+        $query = Facility::query();
 
-    public function create()
-    {
-        return view('admin.facilities.create');
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%');
+        }
+
+        $facilities = $query->sortable()->paginate(10);
+        
+        return view('admin.facilities.index', compact('facilities'));
     }
 
     public function store(Request $request)
@@ -23,23 +27,12 @@ class FacilityController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'icon' => 'nullable|string|max:100',
         ]);
 
-        \App\Models\Facility::create($validated);
+        Facility::create($validated);
 
         return redirect()->route('admin.facilities.index')->with('success', 'Fasilitas berhasil ditambahkan.');
-    }
-
-    public function show(string $id)
-    {
-        $facility = \App\Models\Facility::findOrFail($id);
-        return view('admin.facilities.show', compact('facility'));
-    }
-
-    public function edit(string $id)
-    {
-        $facility = \App\Models\Facility::findOrFail($id);
-        return view('admin.facilities.edit', compact('facility'));
     }
 
     public function update(Request $request, string $id)
@@ -47,9 +40,10 @@ class FacilityController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'icon' => 'nullable|string|max:100',
         ]);
 
-        $facility = \App\Models\Facility::findOrFail($id);
+        $facility = Facility::findOrFail($id);
         $facility->update($validated);
 
         return redirect()->route('admin.facilities.index')->with('success', 'Fasilitas berhasil diperbarui.');
@@ -57,7 +51,7 @@ class FacilityController extends Controller
 
     public function destroy(string $id)
     {
-        $facility = \App\Models\Facility::findOrFail($id);
+        $facility = Facility::findOrFail($id);
         $facility->delete();
 
         return redirect()->route('admin.facilities.index')->with('success', 'Fasilitas berhasil dihapus.');

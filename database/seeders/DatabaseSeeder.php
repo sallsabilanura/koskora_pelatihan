@@ -23,27 +23,6 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
         ]);
         
-        // Optionally create a test owner
-        $owner = User::create([
-            'name' => 'Test Owner',
-            'email' => 'owner@koskora.com',
-            'password' => \Illuminate\Support\Facades\Hash::make('password'),
-            'role' => 'owner',
-        ]);
-
-        // Seed some properties for the owner
-        \App\Models\Property::create([
-            'user_id' => $owner->id,
-            'name' => 'Koskora Sudirman Center',
-            'address' => 'Jl. Jend. Sudirman No. 1, Jakarta',
-            'description' => 'Fasilitas premium di pusat kota Jakarta.',
-        ]);
-
-        \App\Models\Property::create([
-            'user_id' => $owner->id,
-            'name' => 'Koskora Kemang Residence',
-            'address' => 'Jl. Kemang Raya No. 10, Jakarta Selatan',
-            'description' => 'Kos eksklusif dengan lingkungan yang tenang dan asri.',
-        ]);
+       
     }
 }

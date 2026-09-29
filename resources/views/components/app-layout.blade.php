@@ -113,16 +113,45 @@
                     {{-- Top Actions --}}
                     <div class="flex items-center gap-2 sm:gap-4">
                         {{-- Notifications --}}
-                        <button class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-brand transition-all relative group">
-                            <i class="far fa-bell text-lg transition-transform group-hover:rotate-12"></i>
-                            <span class="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
-                        </button>
+                        <div class="relative" x-data="{ openNotifications: false }">
+                            <button @click="openNotifications = !openNotifications" @click.away="openNotifications = false" class="w-10 h-10 rounded-xl flex items-center justify-center text-brand bg-slate-50 hover:bg-brand/10 transition-all relative group">
+                                <i class="far fa-bell text-lg transition-transform group-hover:rotate-12"></i>
+                            </button>
+                            
+                            {{-- Dropdown Notifications --}}
+                            <div x-show="openNotifications" 
+                                x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                x-transition:leave="transition ease-in duration-150"
+                                x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                                class="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50"
+                                style="display: none;">
+                                
+                                <div class="px-4 py-3 border-b border-slate-50 flex items-center justify-between">
+                                    <h3 class="text-sm font-bold text-slate-800">Notifikasi</h3>
+                                </div>
+                                
+                                <div class="p-8 text-center flex flex-col items-center justify-center">
+                                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-3">
+                                        <i class="far fa-bell-slash text-2xl"></i>
+                                    </div>
+                                    <p class="text-sm font-semibold text-slate-600 mb-1">Belum ada notifikasi</p>
+                                    <p class="text-[11px] text-slate-400">Pemberitahuan dari aplikasi mobile akan muncul di sini.</p>
+                                </div>
+                                
+                                <div class="px-4 py-2 border-t border-slate-50 text-center">
+                                    <a href="#" class="text-xs font-bold text-brand hover:underline">Lihat Semua Notifikasi</a>
+                                </div>
+                            </div>
+                        </div>
 
                         {{-- Mobile Logout for User / Partner roles --}}
                         @if(in_array(auth()->user()->role, ['user', 'laundry', 'cleaner', 'admin', 'superadmin']))
                         <form method="POST" action="{{ route('admin.logout') }}" class="block sm:hidden m-0 p-0">
                             @csrf
-                            <button type="submit" onclick="return confirm('Keluar dari aplikasi?')" class="w-10 h-10 rounded-xl flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-500 transition-all">
+                            <button type="button" onclick="event.preventDefault(); window.dispatchEvent(new CustomEvent('open-confirm', { detail: { message: 'Keluar dari aplikasi?', form: this } }));" class="w-10 h-10 rounded-xl flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-500 transition-all">
                                 <i class="fas fa-sign-out-alt text-lg"></i>
                             </button>
                         </form>
@@ -135,7 +164,7 @@
                                     <div class="text-[12px] font-bold text-slate-800 leading-none capitalize">{{ auth()->user()->name }}</div>
                                     <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mt-1 opacity-80">{{ auth()->user()->role }}</div>
                                 </div>
-                                <div class="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center font-bold text-xs border border-brand/20 shadow-sm transition-colors">
+                                <div class="w-10 h-10 rounded-full bg-brand/10 text-brand flex items-center justify-center font-bold text-xs transition-colors">
                                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                                 </div>
                                 <i class="fas fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" :class="openProfile ? 'rotate-180' : ''"></i>
@@ -296,6 +325,40 @@
                 }
             }
         </script>
+        
+        <!-- Global Confirm Modal -->
+        <div x-data="{ 
+                show: false, 
+                message: '', 
+                form: null 
+             }" 
+             @open-confirm.window="show = true; message = $event.detail.message; form = $event.detail.form"
+             x-show="show" 
+             style="display: none;" 
+             class="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-0">
+            <!-- Backdrop -->
+            <div x-show="show" 
+                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" @click="show = false"></div>
+
+            <!-- Modal -->
+            <div x-show="show" 
+                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden text-center flex flex-col p-6">
+                <div class="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 border-4 border-red-100">
+                    <i class="fas fa-exclamation"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-2">Konfirmasi</h3>
+                <p class="text-slate-500 mb-6" x-text="message"></p>
+                <div class="flex items-center justify-center gap-3 w-full">
+                    <button type="button" @click="show = false" class="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-5 py-2.5 text-sm font-semibold flex-1 transition-colors flex justify-center items-center">Batal</button>
+                    <button type="button" @click="form.submit ? form.submit() : (form.closest('form') ? form.closest('form').submit() : null)" class="bg-[#d82a2a] text-white hover:bg-red-700 rounded-xl px-5 py-2.5 text-sm font-semibold flex-1 transition-colors flex justify-center items-center">Ya, Lanjutkan</button>
+                </div>
+            </div>
+        </div>
+
         @stack('scripts')
     </body>
 </html>

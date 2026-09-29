@@ -108,21 +108,21 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
-                                        <button @click="showEditModal = true" type="button" class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-brand hover:border-brand/30 transition-all" title="Edit">
-                                            <i class="fas fa-edit text-xs"></i>
+                                        <button @click="showEditModal = true" type="button" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-brand hover:bg-slate-50 transition-all" title="Edit">
+                                            <i class="fas fa-edit"></i>
                                         </button>
                                         @if(auth()->id() !== $user->id)
-                                        <form action="{{ route('admin.users.reset-password', $user->id) }}" method="POST" class="inline-block m-0" onsubmit="return confirm('Reset password ke default 12345678?');">
+                                        <form action="{{ route('admin.users.reset-password', $user->id) }}" method="POST" class="inline-block m-0" onsubmit="event.preventDefault(); window.dispatchEvent(new CustomEvent('open-confirm', { detail: { message: 'Reset password ke default 12345678?', form: this } }));">
                                             @csrf
-                                            <button type="submit" class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-amber-500 hover:border-amber-200 hover:bg-amber-50 transition-all" title="Reset Password">
-                                                <i class="fas fa-key text-xs"></i>
+                                            <button type="submit" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-amber-500 hover:bg-amber-50 transition-all" title="Reset Password">
+                                                <i class="fas fa-key"></i>
                                             </button>
                                         </form>
-                                        <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="inline-block m-0" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
+                                        <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="inline-block m-0" onsubmit="event.preventDefault(); window.dispatchEvent(new CustomEvent('open-confirm', { detail: { message: 'Apakah Anda yakin ingin menghapus pengguna {{ $user->name }}?', form: this } }));">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 transition-all" title="Hapus">
-                                                <i class="fas fa-trash-alt text-xs"></i>
+                                            <button type="submit" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all" title="Hapus">
+                                                <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </form>
                                         @else
@@ -178,6 +178,8 @@
                                         </div>
                                     </div>
                                     </template>
+
+
                                 </td>
                             </tr>
                         @empty

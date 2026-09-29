@@ -62,7 +62,7 @@
                             <td class="px-6 py-4 pt-4 pb-4">
                                 <div class="space-y-3">
                                     @foreach($room->roomRentals as $rental)
-                                        <div x-data="{ showEditModal: {{ $errors->any() && old('_method') == 'PUT' && old('id') == $rental->id ? 'true' : 'false' }} }" class="flex items-center justify-between bg-white border border-slate-100 rounded-xl p-3 shadow-sm hover:border-brand/30 hover:shadow-md transition-all group/rental">
+                                        <div x-data="{ showEditModal: {{ $errors->any() && old('_method') == 'PUT' && old('id') == $rental->id ? 'true' : 'false' }} }" class="flex items-center justify-between p-2 hover:bg-slate-50 rounded-xl transition-all group/rental">
                                             <div class="flex items-center gap-3">
                                                 <div class="w-10 h-10 rounded-lg bg-brand/5 flex items-center justify-center text-brand">
                                                     <i class="fas fa-tag"></i>
@@ -74,13 +74,13 @@
                                             </div>
                                             
                                             <div class="flex items-center gap-2 opacity-0 group-hover/rental:opacity-100 focus-within:opacity-100 transition-all">
-                                                <button type="button" @click="showEditModal = true" class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-brand hover:border-brand/30 transition-all">
-                                                    <i class="fas fa-edit text-xs"></i>
+                                                <button type="button" @click="showEditModal = true" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-brand hover:bg-slate-50 transition-all">
+                                                    <i class="fas fa-edit"></i>
                                                 </button>
                                                 <form action="{{ route('admin.room-rentals.destroy', $rental->id) }}" method="POST" class="m-0">
                                                     @csrf @method('DELETE')
-                                                    <button type="submit" onclick="return confirm('Hapus harga {{ $rental->rental_type }} untuk kamar ini?')" class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 transition-all">
-                                                        <i class="fas fa-trash-alt text-xs"></i>
+                                                    <button type="button" onclick="event.preventDefault(); window.dispatchEvent(new CustomEvent('open-confirm', { detail: { message: 'Hapus harga {{ $rental->rental_type }} untuk kamar ini?', form: this } }));" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all">
+                                                        <i class="fas fa-trash-alt"></i>
                                                     </button>
                                                 </form>
                                             </div>
@@ -215,3 +215,4 @@
     </template>
     </div>
 </x-app-layout>
+

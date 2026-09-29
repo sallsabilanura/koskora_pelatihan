@@ -89,7 +89,7 @@
                                     <button type="button" @click="showEditModal = true" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-brand transition-colors" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <form action="{{ route('admin.tenants.destroy', $item->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus penyewa ini?');">
+                                    <form action="{{ route('admin.tenants.destroy', $item->id) }}" method="POST" class="inline-block" onsubmit="event.preventDefault(); window.dispatchEvent(new CustomEvent('open-confirm', { detail: { message: 'Apakah Anda yakin ingin menghapus penyewa ini?', form: this } }));">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-colors" title="Hapus">

@@ -63,13 +63,13 @@
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex items-center justify-end gap-2">
-                                    <button @click="showEditModal = true" class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-brand hover:border-brand/30 transition-all">
-                                        <i class="fas fa-edit text-xs"></i>
+                                    <button @click="showEditModal = true" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-brand hover:bg-slate-50 transition-all">
+                                        <i class="fas fa-edit"></i>
                                     </button>
                                     <form action="{{ route('admin.facilities.destroy', $item->id) }}" method="POST" class="m-0">
                                         @csrf @method('DELETE')
-                                        <button type="submit" onclick="return confirm('Hapus fasilitas ini?')" class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 transition-all">
-                                            <i class="fas fa-trash-alt text-xs"></i>
+                                        <button type="button" onclick="event.preventDefault(); window.dispatchEvent(new CustomEvent('open-confirm', { detail: { message: 'Hapus fasilitas ini?', form: this } }));" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all">
+                                            <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </form>
                                 </div>

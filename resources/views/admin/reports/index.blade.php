@@ -13,35 +13,65 @@
             </nav>
         </div>
 
-        <div class="max-w-3xl mx-auto space-y-6 mt-8">
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center">
-            <div class="w-16 h-16 bg-brand/10 text-brand rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">
-                <i class="fas fa-file-pdf"></i>
-            </div>
-            <h2 class="text-2xl font-bold text-slate-800 tracking-tight mb-2">Cetak Laporan Keuangan</h2>
-            <p class="text-slate-500 mb-8 max-w-md mx-auto">Pilih bulan dan tahun untuk menghasilkan laporan rekapitulasi pembayaran uang kos secara otomatis. Laporan siap cetak dalam format kertas A4.</p>
-
-            <form action="{{ route('admin.reports.print') }}" method="GET" target="_blank" class="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
-                <div class="flex-1 w-full">
-                    <input type="month" name="month" value="{{ date('Y-m') }}" class="form-input w-full rounded-xl text-center font-medium h-[42px]" required>
+        <div class="max-w-5xl mx-auto space-y-6 mt-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                {{-- Main Active Report (Laporan Keuangan) --}}
+                <div class="md:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                    <div class="p-6 md:p-8 flex-1 border-b border-slate-100">
+                        <div class="w-14 h-14 bg-brand/10 text-brand rounded-2xl flex items-center justify-center text-2xl mb-6">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-800 mb-2">Laporan Keuangan</h2>
+                        <p class="text-slate-500 text-sm leading-relaxed max-w-lg">
+                            Cetak rekapitulasi data pembayaran uang kos secara otomatis. Data akan diekspor dalam format PDF (A4) yang siap untuk dicetak atau diarsipkan.
+                        </p>
+                    </div>
+                    <div class="p-6 md:p-8 bg-slate-50/50">
+                        <form action="{{ route('admin.reports.print') }}" method="GET" target="_blank" class="flex flex-col sm:flex-row gap-3 max-w-lg">
+                            <div class="flex-1">
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Periode Laporan</label>
+                                <input type="month" name="month" value="{{ date('Y-m') }}" class="form-input w-full rounded-xl text-sm h-[42px] border-slate-200 focus:border-brand focus:ring-brand bg-white" required>
+                            </div>
+                            <div class="flex items-end">
+                                <button type="submit" class="btn bg-brand text-white hover:bg-brand-dark px-6 rounded-xl font-medium h-[42px] shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">
+                                    <i class="fas fa-print"></i> Cetak PDF
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary bg-brand text-white hover:bg-brand-dark px-6 rounded-xl font-medium w-full sm:w-auto shadow-md h-[42px] whitespace-nowrap">
-                    <i class="fas fa-print mr-2"></i> Buat Laporan
-                </button>
-            </form>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 opacity-60 pointer-events-none">
-            <!-- Placeholder for future reports -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-center">
-                <i class="fas fa-users text-2xl text-slate-300 mb-3"></i>
-                <h3 class="font-bold text-slate-600">Laporan Penghuni</h3>
-                <p class="text-xs text-slate-400 mt-1">Segera Hadir</p>
-            </div>
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-center">
-                <i class="fas fa-door-open text-2xl text-slate-300 mb-3"></i>
-                <h3 class="font-bold text-slate-600">Laporan Kamar</h3>
-                <p class="text-xs text-slate-400 mt-1">Segera Hadir</p>
+
+                {{-- Upcoming Reports Column --}}
+                <div class="space-y-6 flex flex-col">
+                    {{-- Laporan Penghuni --}}
+                    <div class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 relative flex flex-col justify-center">
+                        <div class="absolute top-4 right-4">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-400 uppercase tracking-widest">
+                                Segera
+                            </span>
+                        </div>
+                        <div class="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center text-slate-300 text-lg mb-4">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-700 mb-1">Laporan Penghuni</h3>
+                        <p class="text-xs text-slate-500">Statistik demografi dan riwayat sewa.</p>
+                    </div>
+
+                    {{-- Laporan Kamar --}}
+                    <div class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 relative flex flex-col justify-center">
+                        <div class="absolute top-4 right-4">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-400 uppercase tracking-widest">
+                                Segera
+                            </span>
+                        </div>
+                        <div class="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center text-slate-300 text-lg mb-4">
+                            <i class="fas fa-door-open"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-700 mb-1">Laporan Kamar</h3>
+                        <p class="text-xs text-slate-500">Analisis okupansi dan performa.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

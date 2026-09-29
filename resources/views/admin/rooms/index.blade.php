@@ -26,26 +26,56 @@
                                    placeholder="Cari nomor, properti..."
                                    style="padding-left:2.5rem; width:100%; margin:0;" class="form-input">
                         </div>
-                        {{-- District --}}
-                        <select name="district" onchange="this.form.submit()" style="width:160px; flex-shrink:0; margin:0;" class="form-input">
-                            <option value="">Semua Daerah</option>
-                            @foreach($districts as $d)
-                                <option value="{{ $d->district }}" {{ request('district') == $d->district ? 'selected' : '' }}>
-                                    {{ $d->district }} ({{ $d->count }})
-                                </option>
-                            @endforeach
-                        </select>
-                        {{-- Status --}}
-                        <select name="status" onchange="this.form.submit()" style="width:140px; flex-shrink:0; margin:0;" class="form-input">
-                            <option value="">Semua Status</option>
-                            <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Available</option>
-                            <option value="occupied" {{ request('status') == 'occupied' ? 'selected' : '' }}>Occupied</option>
-                            <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
-                        </select>
-                        {{-- Submit --}}
-                        <button type="submit" class="btn btn-primary" style="flex-shrink:0; white-space:nowrap;">
-                            <i class="fas fa-search" style="font-size:0.75rem;"></i> Filter
-                        </button>
+                        {{-- Filter Dropdown --}}
+                        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                            <button type="button" @click="open = !open" class="btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 gap-2 rounded-xl">
+                                <i class="fas fa-filter text-slate-400"></i> Filter 
+                                <i class="fas fa-chevron-down text-xs text-slate-400 transition-transform" :class="{'rotate-180': open}"></i>
+                            </button>
+
+                            {{-- Dropdown Content --}}
+                            <div x-show="open" 
+                                 style="display: none;"
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="transform opacity-0 scale-95"
+                                 x-transition:enter-end="transform opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="transform opacity-100 scale-100"
+                                 x-transition:leave-end="transform opacity-0 scale-95"
+                                 class="absolute right-0 md:left-0 z-50 mt-2 w-72 bg-white rounded-xl shadow-lg border border-slate-100 p-4">
+                                 
+                                <div class="space-y-4">
+                                    {{-- District --}}
+                                    <div class="space-y-1.5">
+                                        <label class="block text-sm font-semibold text-slate-700 text-left">Daerah</label>
+                                        <select name="district" class="form-input w-full rounded-xl">
+                                            <option value="">Semua Daerah</option>
+                                            @foreach($districts as $d)
+                                                <option value="{{ $d->district }}" {{ request('district') == $d->district ? 'selected' : '' }}>
+                                                    {{ $d->district }} ({{ $d->count }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    
+                                    {{-- Status --}}
+                                    <div class="space-y-1.5">
+                                        <label class="block text-sm font-semibold text-slate-700 text-left">Status</label>
+                                        <select name="status" class="form-input w-full rounded-xl">
+                                            <option value="">Semua Status</option>
+                                            <option value="available" {{ request('status') == 'available' ? 'selected' : '' }}>Available</option>
+                                            <option value="occupied" {{ request('status') == 'occupied' ? 'selected' : '' }}>Occupied</option>
+                                            <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
+                                        </select>
+                                    </div>
+
+                                    {{-- Submit Button --}}
+                                    <button type="submit" class="btn bg-brand text-white hover:bg-brand-dark w-full rounded-xl py-2.5">
+                                        Terapkan Filter
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                         @if(request()->anyFilled(['search', 'status', 'district']))
                             <a href="{{ route('admin.rooms.index') }}" class="btn btn-ghost" style="flex-shrink:0;" title="Reset filter">
                                 <i class="fas fa-undo-alt" style="font-size:0.75rem;"></i>
@@ -133,7 +163,7 @@
                                     <button type="button" @click="showEditModal = true" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-brand transition-colors" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <form action="{{ route('admin.rooms.destroy', $room->id ?? 1) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data kamar ini?');">
+                                    <form action="{{ route('admin.rooms.destroy', $room->id ?? 1) }}" method="POST" class="inline-block" onsubmit="event.preventDefault(); window.dispatchEvent(new CustomEvent('open-confirm', { detail: { message: 'Apakah Anda yakin ingin menghapus data kamar ini?', form: this } }));">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-colors" title="Hapus">
@@ -263,26 +293,21 @@
                                                     </select>
                                                 </div>
                                                 <div class="space-y-3 pt-2 md:col-span-2">
-                                                    <label class="block text-sm font-semibold text-slate-700">Fasilitas Kamar</label>
-                                                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Fasilitas Kamar</label>
+                                                    <div class="flex flex-wrap gap-2">
                                                         @php
                                                             $currFacs = old('id') == $room->id ? old('facilities', []) : $room->facilities->pluck('id')->toArray();
                                                         @endphp
                                                         @foreach($facilities as $facility)
-                                                            <label class="cursor-pointer relative group">
+                                                            <label class="cursor-pointer relative group inline-block">
                                                                 <input type="checkbox" name="facilities[]" value="{{ $facility->id }}" class="peer sr-only" {{ in_array($facility->id, $currFacs) ? 'checked' : '' }}>
-                                                                <div class="rounded-xl border border-slate-200 p-3 flex flex-col items-center justify-center gap-2 hover:bg-slate-50 peer-checked:border-brand peer-checked:bg-brand/5 peer-checked:text-brand transition-all text-slate-500 min-h-[80px]">
-                                                                    <i class="{{ $facility->icon ?? 'fas fa-check' }} text-xl mb-1"></i>
-                                                                    <span class="text-xs font-medium text-center leading-tight">{{ $facility->name }}</span>
-                                                                </div>
-                                                                <div class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100 text-brand transition-opacity">
-                                                                    <i class="fas fa-check-circle text-sm"></i>
+                                                                <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 peer-checked:bg-brand/10 peer-checked:border-brand/50 peer-checked:text-brand transition-colors">
+                                                                    <i class="fas {{ $facility->icon ?? 'fa-check' }}"></i> {{ $facility->name }}
                                                                 </div>
                                                             </label>
                                                         @endforeach
                                                     </div>
                                                 </div>
-                                            </div>
                                             </div>
                                             <div class="pt-2 pb-2 flex items-center justify-end gap-3">
                                                 <button type="button" @click="showEditModal = false" class="btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-5">Batal</button>
@@ -360,23 +385,18 @@
                         </select>
                     </div>
                     <div class="space-y-3 pt-2 md:col-span-2">
-                        <label class="block text-sm font-semibold text-slate-700">Fasilitas Kamar</label>
-                        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Fasilitas Kamar</label>
+                        <div class="flex flex-wrap gap-2">
                             @foreach($facilities as $facility)
-                                <label class="cursor-pointer relative group">
+                                <label class="cursor-pointer relative group inline-block">
                                     <input type="checkbox" name="facilities[]" value="{{ $facility->id }}" class="peer sr-only" {{ (!old('id') && in_array($facility->id, old('facilities', []))) ? 'checked' : '' }}>
-                                    <div class="rounded-xl border border-slate-200 p-3 flex flex-col items-center justify-center gap-2 hover:bg-slate-50 peer-checked:border-brand peer-checked:bg-brand/5 peer-checked:text-brand transition-all text-slate-500 min-h-[80px]">
-                                        <i class="{{ $facility->icon ?? 'fas fa-check' }} text-xl mb-1"></i>
-                                        <span class="text-xs font-medium text-center leading-tight">{{ $facility->name }}</span>
-                                    </div>
-                                    <div class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100 text-brand transition-opacity">
-                                        <i class="fas fa-check-circle text-sm"></i>
+                                    <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 peer-checked:bg-brand/10 peer-checked:border-brand/50 peer-checked:text-brand transition-colors">
+                                        <i class="fas {{ $facility->icon ?? 'fa-check' }}"></i> {{ $facility->name }}
                                     </div>
                                 </label>
                             @endforeach
                         </div>
                     </div>
-                </div>
                 </div>
                 <div class="pt-2 pb-2 flex items-center justify-end gap-3">
                     <button type="button" @click="showCreateModal = false" class="btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-5">Batal</button>

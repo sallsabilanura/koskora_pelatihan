@@ -43,13 +43,17 @@
             </div>
 
             @if(session('success'))
-            <div class="bg-emerald-50 text-emerald-600 p-4 border-b border-emerald-100 text-sm font-medium flex items-center gap-2">
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
+                 x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                 class="bg-emerald-50 text-emerald-600 p-4 border-b border-emerald-100 text-sm font-medium flex items-center gap-2">
                 <i class="fas fa-check-circle"></i> {{ session('success') }}
             </div>
             @endif
 
             @if(session('error'))
-            <div class="bg-rose-50 text-rose-600 p-4 border-b border-rose-100 text-sm font-medium flex items-center gap-2">
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
+                 x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                 class="bg-rose-50 text-rose-600 p-4 border-b border-rose-100 text-sm font-medium flex items-center gap-2">
                 <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
             </div>
             @endif
@@ -68,7 +72,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @forelse ($users as $user)
-                            <tr class="hover:bg-slate-50/50 transition-colors" x-data="{ showEditModal: {{ $errors->any() && old('_method') == 'PUT' && old('id') == $user->id ? 'true' : 'false' }} }">
+                            <tr class="hover:bg-slate-50/50 transition-colors" x-data="{ showEditModal: {{ $errors->any() && old('_method') == 'PUT' && old('id') == $user->id ? 'true' : 'false' }}, showDetailModal: false }">
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
                                         <div class="w-10 h-10 rounded-full bg-brand/10 text-brand flex items-center justify-center font-bold text-sm">
@@ -108,6 +112,9 @@
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex items-center justify-end gap-2">
+                                        <button @click="showDetailModal = true" type="button" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-brand hover:bg-slate-50 transition-all" title="Detail">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
                                         <button @click="showEditModal = true" type="button" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-brand hover:bg-slate-50 transition-all" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </button>
@@ -145,30 +152,60 @@
                                         <div x-show="showEditModal"
                                              x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
                                              x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                                             class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden text-left flex flex-col max-h-[90vh]">
+                                             class="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden text-left flex flex-col max-h-[90vh]">
                                             
                                             <div class="px-6 pt-5 pb-4 border-b border-slate-100 flex justify-between items-center flex-shrink-0">
                                                 <h3 class="text-[17px] font-bold text-slate-800">Ubah Pengguna</h3>
                                             </div>
 
-                                            <form action="{{ route('admin.users.update', $user->id) }}" method="POST" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto">
+                                            <form action="{{ route('admin.users.update', $user->id) }}" method="POST" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto" x-data="{ selectedRole: '{{ old('id') == $user->id ? old('role') : $user->role }}' }">
                                                 @csrf
                                                 @method('PUT')
                                                 <input type="hidden" name="id" value="{{ $user->id }}">
                                                 
-                                                <div class="space-y-1.5">
-                                                    <label class="block text-sm font-semibold text-slate-700">Nama Lengkap <span class="text-rose-500">*</span></label>
-                                                    <input type="text" name="name" value="{{ old('id') == $user->id ? old('name') : $user->name }}" class="form-input w-full rounded-xl border-slate-200" required>
-                                                    @if(old('id') == $user->id) @error('name') <p class="text-xs text-red-500">{{ $message }}</p> @enderror @endif
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                                    <div class="space-y-1.5">
+                                                        <label class="block text-sm font-semibold text-slate-700">Nama Lengkap <span class="text-rose-500">*</span></label>
+                                                        <input type="text" name="name" value="{{ old('id') == $user->id ? old('name') : $user->name }}" class="form-input w-full rounded-xl border-slate-200" required>
+                                                        @if(old('id') == $user->id) @error('name') <p class="text-xs text-red-500">{{ $message }}</p> @enderror @endif
+                                                    </div>
+
+                                                    <div class="space-y-1.5">
+                                                        <label class="block text-sm font-semibold text-slate-700">Email <span class="text-rose-500">*</span></label>
+                                                        <input type="email" name="email" value="{{ old('id') == $user->id ? old('email') : $user->email }}" class="form-input w-full rounded-xl border-slate-200" required>
+                                                        @if(old('id') == $user->id) @error('email') <p class="text-xs text-red-500">{{ $message }}</p> @enderror @endif
+                                                    </div>
                                                 </div>
 
                                                 <div class="space-y-1.5">
-                                                    <label class="block text-sm font-semibold text-slate-700">Email <span class="text-rose-500">*</span></label>
-                                                    <input type="email" name="email" value="{{ old('id') == $user->id ? old('email') : $user->email }}" class="form-input w-full rounded-xl border-slate-200" required>
-                                                    @if(old('id') == $user->id) @error('email') <p class="text-xs text-red-500">{{ $message }}</p> @enderror @endif
+                                                    <label class="block text-sm font-semibold text-slate-700">Peran <span class="text-rose-500">*</span></label>
+                                                    <select name="role" x-model="selectedRole" class="form-input w-full rounded-xl border-slate-200" required>
+                                                        <option value="tenant">Tenant (Penyewa)</option>
+                                                        <option value="owner">Owner</option>
+                                                    </select>
+                                                    @if(old('id') == $user->id) @error('role') <p class="text-xs text-red-500">{{ $message }}</p> @enderror @endif
                                                 </div>
 
+                                                <div x-show="selectedRole == 'tenant'" class="space-y-5 border-t border-slate-100 pt-5 mt-5">
+                                                    <h4 class="font-semibold text-slate-800 text-sm">Data Penyewa (Opsional)</h4>
+                                                    
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                                        <div class="space-y-1.5">
+                                                            <label class="block text-sm font-semibold text-slate-700">Nomor HP</label>
+                                                            <input type="text" name="phone_number" value="{{ old('id') == $user->id ? old('phone_number') : $user->phone_number }}" class="form-input w-full rounded-xl border-slate-200">
+                                                        </div>
 
+                                                        <div class="space-y-1.5">
+                                                            <label class="block text-sm font-semibold text-slate-700">Kontak Darurat</label>
+                                                            <input type="text" name="emergency_contact" value="{{ old('id') == $user->id ? old('emergency_contact') : $user->emergency_contact }}" class="form-input w-full rounded-xl border-slate-200">
+                                                        </div>
+
+                                                        <div class="space-y-1.5 md:col-span-2">
+                                                            <label class="block text-sm font-semibold text-slate-700">Alamat</label>
+                                                            <textarea name="address" rows="2" class="form-input w-full rounded-xl border-slate-200">{{ old('id') == $user->id ? old('address') : $user->address }}</textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
                                                 <div class="pt-2 pb-2 flex items-center justify-end gap-3">
                                                     <button type="button" @click="showEditModal = false" class="btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-5 py-2 text-sm font-medium transition-colors">Batal</button>
@@ -179,6 +216,82 @@
                                     </div>
                                     </template>
 
+                                <!-- Detail Modal -->
+                                <td class="p-0 border-0">
+                                    <template x-teleport="body">
+                                        <div x-show="showDetailModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
+                                        <div x-show="showDetailModal" 
+                                             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                                             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                                             class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" @click="showDetailModal = false"></div>
+                                        <div x-show="showDetailModal"
+                                             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                                             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                                             class="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden text-left flex flex-col max-h-[90vh]">
+                                            
+                                            <div class="px-6 pt-5 pb-4 border-b border-slate-100 flex justify-between items-center flex-shrink-0">
+                                                <h3 class="text-[17px] font-bold text-slate-800">Detail Pengguna</h3>
+                                                <button @click="showDetailModal = false" class="text-slate-400 hover:text-slate-600">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+
+                                            <div class="px-6 py-5 overflow-y-auto space-y-4">
+                                                <div class="flex items-center gap-4 border-b border-slate-100 pb-4">
+                                                    <div class="w-16 h-16 rounded-full bg-brand/10 text-brand flex items-center justify-center font-bold text-xl">
+                                                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                                                    </div>
+                                                    <div>
+                                                        <div class="font-bold text-slate-800 text-lg">{{ $user->name }}</div>
+                                                        <div class="text-sm text-slate-500">{{ $user->email }}</div>
+                                                        <div class="mt-1">
+                                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-800 uppercase tracking-wider">
+                                                                {{ $user->role }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="grid grid-cols-1 gap-4">
+                                                    <div>
+                                                        <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Status Akun</div>
+                                                        <div class="text-sm font-medium {{ $user->is_active ? 'text-emerald-600' : 'text-rose-600' }}">
+                                                            {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Terdaftar Pada</div>
+                                                        <div class="text-sm font-medium text-slate-800">{{ $user->created_at->format('d F Y, H:i') }}</div>
+                                                    </div>
+                                                    
+                                                    @if($user->role === 'tenant')
+                                                        <div class="border-t border-slate-100 pt-4 mt-2">
+                                                            <h4 class="font-bold text-slate-800 text-sm mb-3">Informasi Penyewa</h4>
+                                                            <div class="space-y-3">
+                                                                <div>
+                                                                    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Nomor HP</div>
+                                                                    <div class="text-sm font-medium text-slate-800">{{ $user->phone_number ?? '-' }}</div>
+                                                                </div>
+                                                                <div>
+                                                                    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Kontak Darurat</div>
+                                                                    <div class="text-sm font-medium text-slate-800">{{ $user->emergency_contact ?? '-' }}</div>
+                                                                </div>
+                                                                <div>
+                                                                    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Alamat</div>
+                                                                    <div class="text-sm font-medium text-slate-800">{{ $user->address ?? '-' }}</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+                                                <button type="button" @click="showDetailModal = false" class="btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 rounded-xl px-5 py-2 text-sm font-medium transition-colors">Tutup</button>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </template>
+                                </td>
 
                                 </td>
                             </tr>
@@ -215,35 +328,66 @@
             <div x-show="showCreateModal"
                  x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
                  x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                 class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden text-left flex flex-col max-h-[90vh]">
+                 class="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden text-left flex flex-col max-h-[90vh]">
                 
                 <div class="px-6 pt-5 pb-4 border-b border-slate-100 flex justify-between items-center flex-shrink-0">
                     <h3 class="text-[17px] font-bold text-slate-800">Tambah Pengguna Baru</h3>
                 </div>
 
-                <form action="{{ route('admin.users.store') }}" method="POST" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto">
+                <form action="{{ route('admin.users.store') }}" method="POST" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto" x-data="{ selectedRole: '{{ old('role', 'tenant') }}' }">
                     @csrf
                     
-                    <div class="space-y-1.5">
-                        <label class="block text-sm font-semibold text-slate-700">Nama Lengkap <span class="text-rose-500">*</span></label>
-                        <input type="text" name="name" value="{{ !old('id') ? old('name') : '' }}" class="form-input w-full rounded-xl border-slate-200" required>
-                        @if(!old('id')) @error('name') <p class="text-xs text-red-500">{{ $message }}</p> @enderror @endif
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="space-y-1.5">
+                            <label class="block text-sm font-semibold text-slate-700">Nama Lengkap <span class="text-rose-500">*</span></label>
+                            <input type="text" name="name" value="{{ !old('id') ? old('name') : '' }}" class="form-input w-full rounded-xl border-slate-200" placeholder="Contoh: Budi Santoso" required>
+                            @if(!old('id')) @error('name') <p class="text-xs text-red-500">{{ $message }}</p> @enderror @endif
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="block text-sm font-semibold text-slate-700">Email <span class="text-rose-500">*</span></label>
+                            <input type="email" name="email" value="{{ !old('id') ? old('email') : '' }}" class="form-input w-full rounded-xl border-slate-200" placeholder="Contoh: budi@email.com" required>
+                            @if(!old('id')) @error('email') <p class="text-xs text-red-500">{{ $message }}</p> @enderror @endif
+                        </div>
                     </div>
 
                     <div class="space-y-1.5">
-                        <label class="block text-sm font-semibold text-slate-700">Email <span class="text-rose-500">*</span></label>
-                        <input type="email" name="email" value="{{ !old('id') ? old('email') : '' }}" class="form-input w-full rounded-xl border-slate-200" required>
-                        @if(!old('id')) @error('email') <p class="text-xs text-red-500">{{ $message }}</p> @enderror @endif
+                        <label class="block text-sm font-semibold text-slate-700">Peran <span class="text-rose-500">*</span></label>
+                        <select name="role" x-model="selectedRole" class="form-input w-full rounded-xl border-slate-200" required>
+                            <option value="tenant">Tenant (Penyewa)</option>
+                            <option value="owner">Owner</option>
+                        </select>
+                        @if(!old('id')) @error('role') <p class="text-xs text-red-500">{{ $message }}</p> @enderror @endif
                     </div>
 
-                    <div class="bg-blue-50 border border-blue-100 text-blue-700 p-4 rounded-xl text-sm flex gap-3">
-                        <i class="fas fa-info-circle mt-0.5"></i>
-                        <div>Password akan secara otomatis diatur menjadi <strong>12345678</strong> untuk pengguna baru.</div>
+                    <div x-show="selectedRole == 'tenant'" class="space-y-5 border-t border-slate-100 pt-5 mt-5">
+                        <h4 class="font-semibold text-slate-800 text-sm">Data Penyewa (Opsional)</h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="space-y-1.5">
+                                <label class="block text-sm font-semibold text-slate-700">Nomor HP</label>
+                                <input type="text" name="phone_number" value="{{ !old('id') ? old('phone_number') : '' }}" class="form-input w-full rounded-xl border-slate-200" placeholder="Contoh: 08123456789">
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="block text-sm font-semibold text-slate-700">Kontak Darurat</label>
+                                <input type="text" name="emergency_contact" value="{{ !old('id') ? old('emergency_contact') : '' }}" class="form-input w-full rounded-xl border-slate-200" placeholder="Contoh: 08198765432 (Nama - Hubungan)">
+                            </div>
+
+                            <div class="space-y-1.5 md:col-span-2">
+                                <label class="block text-sm font-semibold text-slate-700">Alamat</label>
+                                <textarea name="address" rows="2" class="form-input w-full rounded-xl border-slate-200" placeholder="Contoh: Jl. Sudirman No.45, Jakarta Selatan">{{ !old('id') ? old('address') : '' }}</textarea>
+                            </div>
+                        </div>
                     </div>
+
 
                     <div class="pt-2 pb-2 flex items-center justify-end gap-3">
                         <button type="button" @click="showCreateModal = false" class="btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-5 py-2 text-sm font-medium transition-colors">Batal</button>
-                        <button type="submit" class="btn bg-brand text-white hover:bg-brand-dark rounded-xl px-5 py-2 text-sm font-medium transition-colors">Simpan</button>
+                        
+                        <button type="submit" name="action" value="save" class="btn bg-brand text-white hover:bg-brand-dark rounded-xl px-5 py-2 text-sm font-medium transition-colors">
+                            Simpan Pengguna
+                        </button>
                     </div>
                 </form>
             </div>

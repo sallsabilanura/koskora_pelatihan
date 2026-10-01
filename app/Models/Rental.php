@@ -7,17 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 class Rental extends Model
 {
     protected $fillable = [
-        'tenants_id',
+        'user_id',
         'room_rentals_id',
         'start_date',
         'end_date',
         'rental_price',
-        'status'
-    ]; 
+        'status',
+    ];
 
-    public function tenant()
+    public function user()
     {
-        return $this->belongsTo(Tenant::class, 'tenants_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function roomRental()
@@ -25,4 +25,3 @@ class Rental extends Model
         return $this->belongsTo(RoomRental::class, 'room_rentals_id');
     }
 }
- 

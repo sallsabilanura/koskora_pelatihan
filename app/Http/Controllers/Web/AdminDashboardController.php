@@ -20,10 +20,10 @@ class AdminDashboardController extends Controller
 
         $totalRooms = \App\Models\Room::count();
         $availableRooms = \App\Models\Room::where('status', 'available')->count();
-        $totalTenants = \App\Models\Tenant::count();
+        $totalTenants = \App\Models\User::where('role', 'tenant')->count();
         $totalRevenue = \App\Models\Payment::where('status', 'paid')->sum('amount');
         
-        $recentPayments = \App\Models\Payment::with(['rental.tenant', 'rental.roomRental.room'])->latest()->take(5)->get();
+        $recentPayments = \App\Models\Payment::with(['rental.user', 'rental.roomRental.room'])->latest()->take(5)->get();
         $announcementsCount = 0;
 
         return view('admin.dashboard', compact(

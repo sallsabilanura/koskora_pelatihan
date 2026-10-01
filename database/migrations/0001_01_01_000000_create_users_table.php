@@ -17,7 +17,12 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', ['admin', 'owner', 'tenant'])->default('tenant');            
+            $table->enum('role', ['admin', 'owner', 'tenant'])->default('tenant');
+            $table->string('phone_number', 20)->nullable();
+            $table->text('address')->nullable();
+            $table->string('emergency_contact', 20)->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->boolean('must_change_password')->default(true);
             $table->rememberToken();
             $table->timestamps();
         });

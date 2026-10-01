@@ -30,7 +30,7 @@
                     <div class="p-6 md:p-8 bg-slate-50/50">
                         <form action="{{ route('admin.reports.print') }}" method="GET" target="_blank" class="flex flex-col sm:flex-row gap-3 max-w-lg">
                             <div class="flex-1">
-                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Periode Laporan</label>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Periode Laporan <span class="text-rose-500">*</span></label>
                                 <input type="month" name="month" value="{{ date('Y-m') }}" class="form-input w-full rounded-xl text-sm h-[42px] border-slate-200 focus:border-brand focus:ring-brand bg-white" required>
                             </div>
                             <div class="flex items-end">

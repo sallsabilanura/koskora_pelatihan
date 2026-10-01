@@ -14,7 +14,7 @@
             padding: 40px;
         }
         .header {
-            text-align: center;
+            text-align: left;
             border-bottom: 2px solid #1e1b9b;
             padding-bottom: 20px;
             margin-bottom: 30px;

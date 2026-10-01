@@ -47,11 +47,6 @@
         <div class="px-4 mt-6">
             <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 px-3">Operasional & Transaksi</div>
             <nav class="space-y-1">
-                <a href="{{ route('admin.tenants.index') }}" class="flex items-center gap-3 px-3 py-2 {{ request()->routeIs('admin.tenants.*') ? 'bg-brand/5 text-brand border border-brand/10' : 'text-slate-500 hover:bg-slate-50 hover:text-brand' }} rounded-lg font-medium text-sm transition-all">
-                    <i class="fas fa-users w-5 text-center text-[15px]"></i>
-                    <span>Data Penyewa</span>
-                </a>
-
                 <a href="{{ route('admin.rentals.index') }}" class="flex items-center gap-3 px-3 py-2 {{ request()->routeIs('admin.rentals.*') ? 'bg-brand/5 text-brand border border-brand/10' : 'text-slate-500 hover:bg-slate-50 hover:text-brand' }} rounded-lg font-medium text-sm transition-all">
                     <i class="fas fa-file-signature w-5 text-center text-[15px]"></i>
                     <span>Kontrak Sewa</span>

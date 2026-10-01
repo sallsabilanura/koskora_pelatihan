@@ -78,10 +78,10 @@ class AuthController extends Controller
             'phone_number' => 'required|string'
         ]);
 
-        // Find tenant by phone number
-        $tenant = \App\Models\Tenant::with('user')->where('phone_number', $request->phone_number)->first();
+        // Find tenant user by phone number
+        $user = \App\Models\User::where('phone_number', $request->phone_number)->where('role', 'tenant')->first();
 
-        if (!$tenant || !$tenant->user) {
+        if (!$user) {
             return response()->json(['message' => 'Phone number not found in our records.'], 404);
         }
 
@@ -117,18 +117,17 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid or expired OTP.'], 401);
         }
 
-        $tenant = \App\Models\Tenant::with('user')->where('phone_number', $request->phone_number)->first();
+        $user = \App\Models\User::where('phone_number', $request->phone_number)->where('role', 'tenant')->first();
 
         // Clear the OTP
         \Illuminate\Support\Facades\Cache::forget('otp_' . $request->phone_number);
 
         // Generate Sanctum token
-        $token = $tenant->user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'message' => 'Tenant logged in successfully',
-            'user' => $tenant->user,
-            'tenant' => $tenant,
+            'user' => $user,
             'access_token' => $token,
             'token_type' => 'Bearer',
         ]);

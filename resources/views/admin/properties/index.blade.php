@@ -55,16 +55,16 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($properties as $item)
-                        <tr class="hover:bg-slate-50 transition-colors" x-data="{ showEditModal: {{ $errors->any() && old('_method') == 'PUT' && old('id') == $item->id ? 'true' : 'false' }} }">
+                        <tr class="hover:bg-slate-50 transition-colors" x-data="{ showEditModal: {{ $errors->any() && old('_method') == 'PUT' && old('id') == $item->id ? 'true' : 'false' }}, showRoomsModal: false }">
                             <td class="px-6 py-4 font-semibold text-slate-900">
                                 <div>{{ $item->name }}</div>
                                 <div class="text-[11px] font-medium text-slate-400 mt-0.5">Milik: {{ $item->user->name ?? 'Unknown' }}</div>
                             </td>
                             <td class="px-6 py-4 text-slate-500 text-sm max-w-xs truncate" title="{{ $item->address }}">{{ $item->address }}</td>
                             <td class="px-6 py-4 text-center">
-                                <span class="badge {{ $item->rooms_count > 0 ? 'badge-primary' : 'badge-gray' }}">
+                                <button type="button" @click="if({{ $item->rooms_count }} > 0) showRoomsModal = true" class="badge {{ $item->rooms_count > 0 ? 'badge-primary hover:bg-brand hover:text-white transition-colors cursor-pointer' : 'badge-gray cursor-default' }}">
                                     {{ $item->rooms_count }} Kamar
-                                </span>
+                                </button>
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex items-center justify-end gap-2">
@@ -82,6 +82,55 @@
 
                             <!-- Edit Modal -->
                             <td class="p-0 border-0">
+                                <template x-teleport="body">
+                                    <div x-show="showRoomsModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
+                                        <div x-show="showRoomsModal" 
+                                             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                                             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                                             class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" @click="showRoomsModal = false"></div>
+                                        
+                                        <div x-show="showRoomsModal"
+                                             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                                             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                                             class="relative bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden text-left flex flex-col max-h-[80vh]">
+                                            
+                                            <div class="px-6 pt-5 pb-4 border-b border-slate-100 flex justify-between items-center">
+                                                <div>
+                                                    <h3 class="text-[17px] font-bold text-slate-800">Daftar Kamar</h3>
+                                                    <p class="text-xs text-slate-500 mt-1">{{ $item->name }}</p>
+                                                </div>
+                                                <button @click="showRoomsModal = false" class="text-slate-400 hover:text-slate-600 transition-colors w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-50">
+                                                    <i class="fas fa-times text-lg"></i>
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="p-6 overflow-y-auto space-y-3">
+                                                @if($item->rooms->count() > 0)
+                                                    @foreach($item->rooms as $room)
+                                                        <div class="flex items-center justify-between p-3 border border-slate-100 rounded-xl bg-slate-50/50">
+                                                            <div class="flex items-center gap-3">
+                                                                <div class="w-10 h-10 rounded-full bg-brand/10 text-brand flex items-center justify-center font-bold">
+                                                                    {{ $room->room_number }}
+                                                                </div>
+                                                                <div>
+                                                                    <div class="text-sm font-semibold text-slate-800">Kamar {{ $room->room_number }}</div>
+                                                                    <div class="text-[11px] font-medium {{ $room->status == 'available' ? 'text-emerald-500' : ($room->status == 'occupied' ? 'text-rose-500' : 'text-amber-500') }}">
+                                                                        {{ ucfirst($room->status) }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                @else
+                                                    <div class="text-center py-6">
+                                                        <p class="text-sm text-slate-500">Belum ada kamar.</p>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                
                                 <template x-teleport="body">
                                     <div x-show="showEditModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
                                     <!-- Backdrop -->

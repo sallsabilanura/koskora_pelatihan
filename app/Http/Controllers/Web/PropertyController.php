@@ -3,22 +3,24 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Property;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class PropertyController extends Controller
 {
     public function index(Request $request)
     {
-        $query = \App\Models\Property::with('user')->withCount('rooms');
-        
+        $query = Property::with(['user', 'rooms'])->withCount('rooms');
+
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('address', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%')
+                ->orWhere('address', 'like', '%'.$request->search.'%');
         }
 
         $properties = $query->sortable()->paginate(10);
-        $users = \App\Models\User::all();
-        
+        $users = User::all();
+
         return view('admin.properties.index', compact('properties', 'users'));
     }
 
@@ -31,7 +33,7 @@ class PropertyController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        \App\Models\Property::create($validated);
+        Property::create($validated);
 
         return redirect()->route('admin.properties.index')->with('success', 'Properti berhasil ditambahkan.');
     }
@@ -45,7 +47,7 @@ class PropertyController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $property = \App\Models\Property::findOrFail($id);
+        $property = Property::findOrFail($id);
         $property->update($validated);
 
         return redirect()->route('admin.properties.index')->with('success', 'Properti berhasil diperbarui.');
@@ -53,7 +55,7 @@ class PropertyController extends Controller
 
     public function destroy(string $id)
     {
-        $property = \App\Models\Property::findOrFail($id);
+        $property = Property::findOrFail($id);
         $property->delete();
 
         return redirect()->route('admin.properties.index')->with('success', 'Properti berhasil dihapus.');

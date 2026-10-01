@@ -16,6 +16,9 @@
             this.calc();
         },
         calc() {
+            if (this.endDate && this.startDate && this.endDate < this.startDate) {
+                this.endDate = this.startDate;
+            }
             if (!this.startDate || !this.endDate || !this.basePrice) return;
             let s = new Date(this.startDate);
             let e = new Date(this.endDate);
@@ -100,6 +103,9 @@
                                 this.eCalc();
                             },
                             eCalc() {
+                                if (this.eEndDate && this.eStartDate && this.eEndDate < this.eStartDate) {
+                                    this.eEndDate = this.eStartDate;
+                                }
                                 if (!this.eStartDate || !this.eEndDate || !this.eBasePrice) return;
                                 let s = new Date(this.eStartDate);
                                 let e = new Date(this.eEndDate);
@@ -116,7 +122,7 @@
                             }
                         }">
                             <td class="px-6 py-4">
-                                <div class="font-semibold text-slate-800">{{ $item->tenant->user->name ?? 'User Terhapus' }}</div>
+                                <div class="font-semibold text-slate-800">{{ $item->user->name ?? 'User Terhapus' }}</div>
                                 <div class="text-xs text-slate-500">Kamar #{{ $item->roomRental->room->room_number ?? '?' }} - {{ ucfirst($item->roomRental->rental_type ?? '') }}</div>
                             </td>
                             <td class="px-6 py-4">
@@ -127,11 +133,12 @@
                                 <div class="text-sm font-semibold text-slate-800">Rp {{ number_format($item->rental_price, 0, ',', '.') }}</div>
                             </td>
                             <td class="px-6 py-4 text-center">
-                                @if($item->status == 'active')
-                                    <span class="badge badge-success">Aktif</span>
-                                @else
-                                    <span class="badge badge-gray">Selesai</span>
-                                @endif
+                                <form action="{{ route('admin.rentals.toggle-status', $item->id) }}" method="POST" class="m-0 inline-block">
+                                    @csrf
+                                    <button type="submit" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors {{ $item->status == 'active' ? 'bg-brand' : 'bg-slate-200' }}">
+                                        <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform {{ $item->status == 'active' ? 'translate-x-6' : 'translate-x-1' }}"></span>
+                                    </button>
+                                </form>
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex items-center justify-end gap-2">
@@ -170,10 +177,10 @@
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div class="space-y-1.5 md:col-span-2">
                                                     <label class="block text-sm font-semibold text-slate-700">Penyewa <span class="text-rose-500">*</span></label>
-                                                    <select name="tenants_id" class="form-input w-full rounded-xl" required>
-                                                        @php $currTenant = old('id') == $item->id ? old('tenants_id') : $item->tenants_id; @endphp
-                                                        @foreach($tenants as $tenant)
-                                                            <option value="{{ $tenant->id }}" {{ $currTenant == $tenant->id ? 'selected' : '' }}>{{ $tenant->user->name ?? 'User' }} ({{ $tenant->phone_number }})</option>
+                                                    <select name="user_id" class="form-input w-full rounded-xl" required>
+                                                        @php $currUser = old('id') == $item->id ? old('user_id') : $item->user_id; @endphp
+                                                        @foreach($users as $user)
+                                                            <option value="{{ $user->id }}" {{ $currUser == $user->id ? 'selected' : '' }}>{{ $user->name }} ({{ $user->phone_number ?? '-' }})</option>
                                                         @endforeach
                                                     </select>
                                                 </div>
@@ -192,19 +199,14 @@
                                                 </div>
                                                 <div class="space-y-1.5">
                                                     <label class="block text-sm font-semibold text-slate-700">Tanggal Berakhir <span class="text-rose-500">*</span></label>
-                                                    <input type="date" name="end_date" x-model="eEndDate" @change="eCalc" class="form-input w-full rounded-xl" required>
+                                                    <input type="date" name="end_date" x-model="eEndDate" @change="eCalc" :min="eStartDate" class="form-input w-full rounded-xl" required>
                                                 </div>
                                                 <div class="space-y-1.5">
                                                     <label class="block text-sm font-semibold text-slate-700">Harga Kesepakatan (Rp) <span class="text-rose-500">*</span></label>
                                                     <input type="number" name="rental_price" x-model="ePrice" class="form-input w-full rounded-xl" required min="0" step="0.01">
                                                 </div>
-                                                <div class="space-y-1.5">
-                                                    <label class="block text-sm font-semibold text-slate-700">Status <span class="text-rose-500">*</span></label>
-                                                    <select name="status" class="form-input w-full rounded-xl" required>
-                                                        @php $currStatus = old('id') == $item->id ? old('status') : $item->status; @endphp
-                                                        <option value="active" {{ $currStatus == 'active' ? 'selected' : '' }}>Aktif</option>
-                                                        <option value="inactive" {{ $currStatus == 'inactive' ? 'selected' : '' }}>Selesai / Nonaktif</option>
-                                                    </select>
+                                                <div class="space-y-1.5 md:col-span-2 text-sm text-slate-500 bg-slate-50 p-4 rounded-xl border border-slate-100 mt-2">
+                                                    <i class="fas fa-info-circle text-brand mr-2"></i> Status kontrak dapat diubah (Aktif/Nonaktif) melalui tombol <i>toggle</i> di tabel utama.
                                                 </div>
                                             </div>
                                             
@@ -259,10 +261,10 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-1.5 md:col-span-2">
                         <label class="block text-sm font-semibold text-slate-700">Penyewa <span class="text-rose-500">*</span></label>
-                        <select name="tenants_id" class="form-input w-full rounded-xl" required>
+                        <select name="user_id" class="form-input w-full rounded-xl" required>
                             <option value="">Pilih Penyewa...</option>
-                            @foreach($tenants as $tenant)
-                                <option value="{{ $tenant->id }}" {{ (!old('id') && old('tenants_id') == $tenant->id) ? 'selected' : '' }}>{{ $tenant->user->name ?? 'User' }} ({{ $tenant->phone_number }})</option>
+                            @foreach($users as $user)
+                                <option value="{{ $user->id }}" {{ (!old('id') && old('user_id') == $user->id) ? 'selected' : '' }}>{{ $user->name }} ({{ $user->phone_number ?? '-' }})</option>
                             @endforeach
                         </select>
                     </div>
@@ -281,18 +283,11 @@
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-sm font-semibold text-slate-700">Tanggal Berakhir <span class="text-rose-500">*</span></label>
-                        <input type="date" name="end_date" x-model="endDate" @change="calc" class="form-input w-full rounded-xl" required>
+                        <input type="date" name="end_date" x-model="endDate" @change="calc" :min="startDate" class="form-input w-full rounded-xl" required>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-sm font-semibold text-slate-700">Harga Kesepakatan (Rp) <span class="text-rose-500">*</span></label>
-                        <input type="number" name="rental_price" x-model="price" class="form-input w-full rounded-xl" required min="0" step="0.01">
-                    </div>
-                    <div class="space-y-1.5">
-                        <label class="block text-sm font-semibold text-slate-700">Status <span class="text-rose-500">*</span></label>
-                        <select name="status" class="form-input w-full rounded-xl" required>
-                            <option value="active" {{ (!old('id') && old('status') == 'active') ? 'selected' : '' }}>Aktif</option>
-                            <option value="inactive" {{ (!old('id') && old('status') == 'inactive') ? 'selected' : '' }}>Selesai / Nonaktif</option>
-                        </select>
+                        <input type="number" name="rental_price" x-model="price" class="form-input w-full rounded-xl" placeholder="Contoh: 1500000" required min="0" step="0.01">
                     </div>
                 </div>
                 <div class="pt-2 pb-2 flex items-center justify-end gap-3">

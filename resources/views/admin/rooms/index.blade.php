@@ -361,11 +361,11 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-1.5">
                         <label class="block text-sm font-semibold text-slate-700">Nomor Kamar <span class="text-rose-500">*</span></label>
-                        <input type="text" name="room_number" value="{{ !old('id') ? old('room_number') : '' }}" class="form-input w-full rounded-xl" required>
+                        <input type="text" name="room_number" value="{{ !old('id') ? old('room_number') : '' }}" class="form-input w-full rounded-xl" placeholder="Contoh: A1, 101" required>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-sm font-semibold text-slate-700">Lantai <span class="text-rose-500">*</span></label>
-                        <input type="text" name="floor" value="{{ !old('id') ? old('floor') : '' }}" class="form-input w-full rounded-xl" required>
+                        <input type="text" name="floor" value="{{ !old('id') ? old('floor') : '' }}" class="form-input w-full rounded-xl" placeholder="Contoh: 1, 2, 3" required>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-sm font-semibold text-slate-700">Properti <span class="text-rose-500">*</span></label>

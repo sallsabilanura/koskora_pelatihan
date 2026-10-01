@@ -186,6 +186,12 @@
                                     <p class="text-sm font-semibold text-slate-800 truncate">{{ auth()->user()->email }}</p>
                                 </div>
 
+                                <a href="{{ route('admin.profile.index') }}" class="w-full text-left px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-brand transition-colors flex items-center gap-2">
+                                    <i class="fas fa-user-circle w-4"></i> Profil Saya
+                                </a>
+
+                                <div class="border-t border-slate-100 my-1"></div>
+
                                 <form method="POST" action="{{ route('admin.logout') }}" class="m-0 p-0">
                                     @csrf
                                     <button type="submit" class="w-full text-left px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors flex items-center gap-2">

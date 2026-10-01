@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Api\RentalController;
 use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\RoomRentalController;
-use App\Http\Controllers\Api\TenantController;
+
 
 // Route untuk autentikasi Owner
 Route::post('/register', [AuthController::class, 'register']);
@@ -25,7 +25,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
     Route::apiResource('properties', PropertyController::class);
     Route::apiResource('rooms', RoomController::class);
     Route::apiResource('room-rentals', RoomRentalController::class);
-    Route::apiResource('tenants', TenantController::class);
+
     Route::apiResource('rentals', RentalController::class);
     Route::apiResource('payments', PaymentController::class);
 

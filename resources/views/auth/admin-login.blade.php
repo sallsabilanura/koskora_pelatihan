@@ -18,7 +18,7 @@
 
         <!-- Email Address -->
         <div class="relative">
-            <label for="email" class="absolute -top-2.5 left-3 z-10 bg-[#fdfdfe] px-2 text-xs font-semibold text-brand-blue tracking-wide">Username / Email</label>
+            <label for="email" class="absolute -top-2.5 left-3 z-10 bg-[#fdfdfe] px-2 text-xs font-semibold text-brand-blue tracking-wide">Username / Email <span class="text-rose-500">*</span></label>
             <input id="email" type="text" name="email" value="{{ old('email') }}" required autofocus placeholder="Masukkan username atau email" class="block w-full px-4 py-3 bg-white border border-brand-blue rounded-md focus:outline-none focus:ring-1 focus:ring-brand-blue transition-all text-slate-800 text-sm placeholder:text-slate-400">
             @error('email')
                 <span class="mt-2 text-xs font-bold text-red-500 block">{{ $message }}</span>
@@ -27,7 +27,7 @@
 
         <!-- Password -->
         <div class="relative mt-8">
-            <label for="password" class="absolute -top-2.5 left-3 z-10 bg-[#fdfdfe] px-2 text-xs font-semibold text-slate-500 tracking-wide">Password</label>
+            <label for="password" class="absolute -top-2.5 left-3 z-10 bg-[#fdfdfe] px-2 text-xs font-semibold text-slate-500 tracking-wide">Password <span class="text-rose-500">*</span></label>
             <div class="relative">
                 <input id="password" type="password" name="password" required placeholder="Masukkan password" class="block w-full pl-4 pr-12 py-3 bg-white border border-slate-300 rounded-md focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all text-slate-800 text-sm placeholder:text-slate-400">
                 <button type="button" onclick="const p=document.getElementById('password'); const i=document.getElementById('eye-icon'); if(p.type==='password'){p.type='text'; i.classList.remove('fa-eye'); i.classList.add('fa-eye-slash');}else{p.type='password'; i.classList.remove('fa-eye-slash'); i.classList.add('fa-eye');}" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none transition-colors">

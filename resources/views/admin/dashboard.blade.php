@@ -97,9 +97,9 @@
                                         <td class="px-6 py-4">
                                             <div class="flex items-center gap-3">
                                                 <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500">
-                                                    {{ strtoupper(substr($payment->rental->tenant->name ?? '?', 0, 2)) }}
+                                                    {{ strtoupper(substr($payment->rental->user->name ?? '?', 0, 2)) }}
                                                 </div>
-                                                <span class="font-semibold text-slate-700">{{ $payment->rental->tenant->name ?? 'Unknown' }}</span>
+                                                <span class="font-semibold text-slate-700">{{ $payment->rental->user->name ?? 'Unknown' }}</span>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4"><span class="font-medium text-slate-500">{{ $payment->rental->roomRental->room->room_number ?? '-' }}</span></td>

@@ -41,10 +41,12 @@
                         <i class="fas fa-print text-sm text-brand"></i>
                         Cetak Laporan
                     </a>
+                    @if(auth()->user()->role === 'superadmin')
                     <button type="button" @click="showCreateModal = true" class="btn btn-primary">
                         <i class="fas fa-plus text-sm"></i>
-                        Catat Pembayaran
+                        Tambah
                     </button>
+                    @endif
                 </div>
             </div>
 
@@ -57,7 +59,9 @@
                         <th class="px-6 py-4">Penyewa & Tagihan</th>
                         <th class="px-6 py-4"><x-sortable column="amount" label="Nominal" /></th>
                         <th class="px-6 py-4 text-center"><x-sortable column="status" label="Status" /></th>
+                        @if(auth()->user()->role === 'superadmin')
                         <th class="px-6 py-4 text-right">Aksi</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -84,6 +88,7 @@
                                     <span class="badge badge-error">Menunggak</span>
                                 @endif
                             </td>
+                            @if(auth()->user()->role === 'superadmin')
                             <td class="px-6 py-4 text-right">
                                 <div class="flex items-center justify-end gap-2">
                                     <button type="button" @click="showEditModal = true" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-brand transition-colors" title="Edit">
@@ -98,6 +103,8 @@
                                     </form>
                                 </div>
                             </td>
+                            @endif
+                            @if(auth()->user()->role === 'superadmin')
                             <!-- Edit Modal -->
                             <td class="p-0 border-0">
                                 <template x-teleport="body">
@@ -171,6 +178,7 @@
                                 </div>
                                 </template>
                             </td>
+                            @endif
                         </tr>
                     @empty
                         <tr>
@@ -194,6 +202,7 @@
             {{ method_exists($payments, 'links') ? $payments->appends(request()->query())->links() : '' }}
         </div>
 
+    @if(auth()->user()->role === 'superadmin')
     <!-- Create Modal -->
     <template x-teleport="body">
         <div x-show="showCreateModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
@@ -260,6 +269,7 @@
         </div>
     </div>
     </template>
+    @endif
     </div>
 </x-app-layout>
 

@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -36,14 +37,34 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $rules = [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'role' => 'required|in:owner,tenant',
             'phone_number' => 'nullable|string|max:20',
             'address' => 'nullable|string',
             'emergency_contact' => 'nullable|string|max:20',
-        ]);
+            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ];
+
+        $messages = [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'name.max' => 'Nama lengkap maksimal 255 karakter.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email ini sudah terdaftar. Silakan gunakan email lain.',
+            'role.required' => 'Peran wajib dipilih.',
+            'profile_photo.image' => 'Foto profil harus berupa gambar.',
+            'profile_photo.mimes' => 'Format foto profil harus jpeg, png, jpg, gif, atau svg.',
+            'profile_photo.max' => 'Ukuran foto profil maksimal 2MB.',
+        ];
+
+        $request->validate($rules, $messages);
+
+        $photoPath = null;
+        if ($request->hasFile('profile_photo')) {
+            $photoPath = $request->file('profile_photo')->store('profile_photos', 'public');
+        }
 
         $user = User::create([
             'name' => $request->name,
@@ -54,6 +75,7 @@ class UserController extends Controller
             'phone_number' => $request->phone_number,
             'address' => $request->address,
             'emergency_contact' => $request->emergency_contact,
+            'profile_photo' => $photoPath,
         ]);
 
         Mail::to($user->email)->send(new UserCreatedMail($user, '12345678'));
@@ -69,6 +91,7 @@ class UserController extends Controller
             'phone_number' => 'nullable|string|max:20',
             'address' => 'nullable|string',
             'emergency_contact' => 'nullable|string|max:20',
+            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ];
 
         if ($request->email !== $user->email) {
@@ -81,7 +104,22 @@ class UserController extends Controller
             $rules['password'] = 'required|string|min:8|confirmed';
         }
 
-        $request->validate($rules);
+        $messages = [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'name.max' => 'Nama lengkap maksimal 255 karakter.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email ini sudah terdaftar. Silakan gunakan email lain.',
+            'role.required' => 'Peran wajib dipilih.',
+            'profile_photo.image' => 'Foto profil harus berupa gambar.',
+            'profile_photo.mimes' => 'Format foto profil harus jpeg, png, jpg, gif, atau svg.',
+            'profile_photo.max' => 'Ukuran foto profil maksimal 2MB.',
+            'password.required' => 'Kata sandi wajib diisi.',
+            'password.min' => 'Kata sandi minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
+        ];
+
+        $request->validate($rules, $messages);
 
         $data = [
             'name' => $request->name,
@@ -92,6 +130,14 @@ class UserController extends Controller
             'emergency_contact' => $request->emergency_contact,
         ];
 
+        if ($request->hasFile('profile_photo')) {
+            // Hapus foto lama jika ada
+            if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
+                Storage::disk('public')->delete($user->profile_photo);
+            }
+            $data['profile_photo'] = $request->file('profile_photo')->store('profile_photos', 'public');
+        }
+
         $user->update($data);
 
         return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil diperbarui');
@@ -101,6 +147,10 @@ class UserController extends Controller
     {
         if (auth()->id() === $user->id) {
             return redirect()->route('admin.users.index')->with('error', 'Tidak dapat menghapus akun sendiri');
+        }
+
+        if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
+            Storage::disk('public')->delete($user->profile_photo);
         }
 
         $user->delete();

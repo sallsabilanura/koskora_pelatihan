@@ -1,4 +1,5 @@
 <x-guest-layout>
+    <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha_v3.site_key') }}"></script>
     <div class="mb-10">
         <div class="mb-6">
             <img src="{{ asset('koskora.png') }}" alt="KosKora Logo" class="h-10 w-auto">
@@ -13,7 +14,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ url('/admin/login') }}" class="space-y-6">
+    <form method="POST" action="{{ url('/admin/login') }}" id="login-form" class="space-y-6">
         @csrf
 
         <!-- Email Address -->
@@ -51,10 +52,27 @@
             @endif
         </div>
 
+        <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+        @error('g-recaptcha-response')
+            <span class="mt-2 text-xs font-bold text-red-500 block">{{ $message }}</span>
+        @enderror
+
         <div class="pt-4">
-            <button type="submit" class="w-full py-3 bg-brand-blue text-white rounded-md font-semibold text-sm hover:bg-[#151375] transition-all flex items-center justify-center">
+            <button type="button" onclick="onSubmit(event)" class="w-full py-3 bg-brand-blue text-white rounded-md font-semibold text-sm hover:bg-[#151375] transition-all flex items-center justify-center">
                 Login to Dashboard
             </button>
         </div>
     </form>
+    
+    <script>
+        function onSubmit(e) {
+            e.preventDefault();
+            grecaptcha.ready(function() {
+                grecaptcha.execute('{{ config('services.recaptcha_v3.site_key') }}', {action: 'login'}).then(function(token) {
+                    document.getElementById('g-recaptcha-response').value = token;
+                    document.getElementById('login-form').submit();
+                });
+            });
+        }
+    </script>
 </x-guest-layout>

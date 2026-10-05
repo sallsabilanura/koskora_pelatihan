@@ -71,9 +71,7 @@
     <body class="font-sans antialiased selection:bg-brand/10 selection:text-brand bg-slate-50 text-slate-600">
         <div class="flex min-h-screen overflow-hidden bg-slate-50">
             <!-- Sidebar Overlay (mobile) -->
-            @if(!in_array(auth()->user()->role, ['user', 'laundry', 'cleaner']))
-            <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/20 backdrop-blur-[2px] z-30 opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden" onclick="closeSidebar()"></div>
-            @endif
+            <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/20 backdrop-blur-[2px] z-[60] opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden" onclick="closeSidebar()"></div>
 
             <!-- Sidebar Navigation -->
             @if(in_array(auth()->user()->role, ['user', 'laundry', 'cleaner']))
@@ -89,7 +87,7 @@
                 {{-- Navbar (Premium & Sticky) --}}
                 <nav class="flex items-center px-4 md:px-8 py-4 bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-20">
                     {{-- Mobile Hamburger --}}
-                    @if(!in_array(auth()->user()->role, ['user', 'laundry', 'cleaner', 'admin', 'superadmin']))
+                    @if(!in_array(auth()->user()->role, ['admin', 'superadmin']))
                     <button class="lg:hidden w-10 h-10 flex items-center justify-center text-slate-400 hover:text-brand transition-colors mr-4" onclick="toggleSidebar()">
                         <i class="fas fa-bars-staggered"></i>
                     </button>
@@ -114,7 +112,7 @@
                     <div class="flex items-center gap-2 sm:gap-4">
                         {{-- Notifications --}}
                         <div class="relative" x-data="{ openNotifications: false }">
-                            <button @click="openNotifications = !openNotifications" @click.away="openNotifications = false" class="w-10 h-10 rounded-xl flex items-center justify-center text-brand bg-slate-50 hover:bg-brand/10 transition-all relative group">
+                            <button @click="openNotifications = !openNotifications" @click.away="openNotifications = false" class="w-10 h-10 flex items-center justify-center text-brand hover:text-brand-dark transition-all relative group">
                                 <i class="far fa-bell text-lg transition-transform group-hover:rotate-12"></i>
                             </button>
                             
@@ -142,7 +140,7 @@
                                 </div>
                                 
                                 <div class="px-4 py-2 border-t border-slate-50 text-center">
-                                    <a href="#" class="text-xs font-bold text-brand hover:underline">Lihat Semua Notifikasi</a>
+                                    <a href="{{ route('admin.notifications.index') }}" class="text-xs font-bold text-brand hover:underline">Lihat Semua Notifikasi</a>
                                 </div>
                             </div>
                         </div>
@@ -279,31 +277,88 @@
         @endif
 
         {{-- ===== BOTTOM NAV: ADMIN & SUPER ADMIN ===== --}}
-        @if(method_exists(auth()->user(), 'isAnyAdmin') && auth()->user()->isAnyAdmin())
-        <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around px-4 pt-2 pb-6 z-50 lg:hidden">
-            <a href="{{ route('admin.dashboard') }}" class="bnav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <i class="fas fa-home-alt bnav-icon"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="#" class="bnav-item {{ request()->routeIs('rooms.*') ? 'active' : '' }}">
-                <i class="fas fa-door-open bnav-icon"></i>
-                <span>Kamar</span>
-            </a>
-            <a href="javascript:void(0)" onclick="toggleSidebar()" class="bnav-item relative -top-5">
-                <div class="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center text-xl shadow-[0_4px_10px_0_rgba(30,27,155,0.3)] border-[3px] border-slate-50 transition-transform duration-200 hover:scale-105">
-                    <i class="fas fa-bars"></i>
+        @if(in_array(auth()->user()->role, ['admin', 'superadmin']))
+        <div x-data="{ openMoreMenu: false }">
+            <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around px-4 pt-2 pb-6 z-50 lg:hidden">
+                <a href="{{ route('admin.dashboard') }}" class="bnav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <i class="fas fa-home-alt bnav-icon"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ route('admin.rooms.index') }}" class="bnav-item {{ request()->routeIs('admin.rooms.*') ? 'active' : '' }}">
+                    <i class="fas fa-door-open bnav-icon"></i>
+                    <span>Kamar</span>
+                </a>
+                <a href="javascript:void(0)" @click="openMoreMenu = true" class="bnav-item relative -top-5">
+                    <div class="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center text-xl shadow-[0_4px_10px_0_rgba(30,27,155,0.3)] border-[3px] border-slate-50 transition-transform duration-200 hover:scale-105">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <span class="mt-1">Lainnya</span>
+                </a>
+                <a href="{{ route('admin.users.index') }}" class="bnav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                    <i class="fas fa-user-friends bnav-icon"></i>
+                    <span>Penyewa</span>
+                </a>
+                <a href="{{ route('admin.payments.index') }}" class="bnav-item {{ request()->routeIs('admin.payments.*') ? 'active' : '' }}">
+                    <i class="fas fa-credit-card bnav-icon"></i>
+                    <span>Bayar</span>
+                </a>
+            </nav>
+
+            <!-- Bottom Sheet Menu Modal -->
+            <div x-show="openMoreMenu" class="fixed inset-0 z-[60] flex items-end justify-center lg:hidden" style="display: none;">
+                <!-- Backdrop -->
+                <div x-show="openMoreMenu" x-transition.opacity @click="openMoreMenu = false" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+                
+                <!-- Bottom Sheet Panel -->
+                <div x-show="openMoreMenu" 
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="translate-y-full"
+                     x-transition:enter-end="translate-y-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="translate-y-0"
+                     x-transition:leave-end="translate-y-full"
+                     class="relative w-full max-h-[85vh] overflow-y-auto bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] pb-8 pt-4 px-6 flex flex-col gap-6">
+                    
+                    <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto shrink-0 mb-2"></div>
+                    
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-slate-800 text-lg">Menu Lainnya</h3>
+                        <button @click="openMoreMenu = false" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200"><i class="fas fa-times"></i></button>
+                    </div>
+                    
+                    <div class="grid grid-cols-4 gap-y-6 gap-x-2">
+                        <a href="{{ route('admin.users.index') }}" class="flex flex-col items-center gap-2 text-slate-500 hover:text-brand transition-colors">
+                            <div class="w-14 h-14 rounded-2xl bg-brand/5 text-brand flex items-center justify-center text-xl"><i class="fas fa-user-cog"></i></div>
+                            <span class="text-[10px] font-semibold text-center leading-tight">Pengguna</span>
+                        </a>
+                        <a href="{{ route('admin.properties.index') }}" class="flex flex-col items-center gap-2 text-slate-500 hover:text-brand transition-colors">
+                            <div class="w-14 h-14 rounded-2xl bg-brand/5 text-brand flex items-center justify-center text-xl"><i class="fas fa-building"></i></div>
+                            <span class="text-[10px] font-semibold text-center leading-tight">Properti</span>
+                        </a>
+                        <a href="{{ route('admin.facilities.index') }}" class="flex flex-col items-center gap-2 text-slate-500 hover:text-brand transition-colors">
+                            <div class="w-14 h-14 rounded-2xl bg-brand/5 text-brand flex items-center justify-center text-xl"><i class="fas fa-concierge-bell"></i></div>
+                            <span class="text-[10px] font-semibold text-center leading-tight">Fasilitas</span>
+                        </a>
+                        <a href="{{ route('admin.room-rentals.index') }}" class="flex flex-col items-center gap-2 text-slate-500 hover:text-brand transition-colors">
+                            <div class="w-14 h-14 rounded-2xl bg-brand/5 text-brand flex items-center justify-center text-xl"><i class="fas fa-tags"></i></div>
+                            <span class="text-[10px] font-semibold text-center leading-tight">Tipe Harga</span>
+                        </a>
+                        <a href="{{ route('admin.rentals.index') }}" class="flex flex-col items-center gap-2 text-slate-500 hover:text-brand transition-colors">
+                            <div class="w-14 h-14 rounded-2xl bg-brand/5 text-brand flex items-center justify-center text-xl"><i class="fas fa-file-signature"></i></div>
+                            <span class="text-[10px] font-semibold text-center leading-tight">Kontrak</span>
+                        </a>
+                        <a href="{{ route('admin.payments.index') }}" class="flex flex-col items-center gap-2 text-slate-500 hover:text-brand transition-colors">
+                            <div class="w-14 h-14 rounded-2xl bg-brand/5 text-brand flex items-center justify-center text-xl"><i class="fas fa-file-invoice-dollar"></i></div>
+                            <span class="text-[10px] font-semibold text-center leading-tight">Riwayat Bayar</span>
+                        </a>
+                        <a href="{{ route('admin.reports.index') }}" class="flex flex-col items-center gap-2 text-slate-500 hover:text-brand transition-colors">
+                            <div class="w-14 h-14 rounded-2xl bg-brand/5 text-brand flex items-center justify-center text-xl"><i class="fas fa-print"></i></div>
+                            <span class="text-[10px] font-semibold text-center leading-tight">Laporan</span>
+                        </a>
+                    </div>
                 </div>
-                <span class="mt-1">Lainnya</span>
-            </a>
-            <a href="#" class="bnav-item {{ request()->routeIs('tenants.*') ? 'active' : '' }}">
-                <i class="fas fa-user-friends bnav-icon"></i>
-                <span>Penyewa</span>
-            </a>
-            <a href="#" class="bnav-item {{ request()->routeIs('rent-payments.*') ? 'active' : '' }}">
-                <i class="fas fa-credit-card bnav-icon"></i>
-                <span>Bayar</span>
-            </a>
-        </nav>
+            </div>
+        </div>
         @endif
 
         <!-- Layout Interaction Scripts -->
@@ -363,6 +418,43 @@
                     <button type="button" @click="form.submit ? form.submit() : (form.closest('form') ? form.closest('form').submit() : null)" class="bg-[#d82a2a] text-white hover:bg-red-700 rounded-xl px-5 py-2.5 text-sm font-semibold flex-1 transition-colors flex justify-center items-center">Ya, Lanjutkan</button>
                 </div>
             </div>
+        </div>
+
+        <!-- Global Toasts -->
+        <div class="fixed top-4 right-4 sm:top-6 sm:right-6 z-[250] flex flex-col gap-3 pointer-events-none w-[320px] max-w-[calc(100vw-32px)]">
+            @if(session('success'))
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
+                 x-transition:enter="transform ease-out duration-300 transition" x-transition:enter-start="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2" x-transition:enter-end="translate-y-0 opacity-100 sm:translate-x-0"
+                 x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2"
+                 class="pointer-events-auto w-full bg-white rounded-xl shadow-xl shadow-emerald-500/5 border border-emerald-100 p-3 flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0">
+                    <i class="fas fa-check text-sm"></i>
+                </div>
+                <div class="flex-1 mt-1.5">
+                    <p class="text-[13px] font-bold text-slate-800 leading-snug">{{ session('success') }}</p>
+                </div>
+                <button @click="show = false" class="text-slate-400 hover:text-slate-600 transition-colors mt-1.5 shrink-0">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+            @endif
+
+            @if(session('error'))
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
+                 x-transition:enter="transform ease-out duration-300 transition" x-transition:enter-start="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2" x-transition:enter-end="translate-y-0 opacity-100 sm:translate-x-0"
+                 x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2"
+                 class="pointer-events-auto w-full bg-white rounded-xl shadow-xl shadow-rose-500/5 border border-rose-100 p-3 flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
+                    <i class="fas fa-exclamation text-sm"></i>
+                </div>
+                <div class="flex-1 mt-1.5">
+                    <p class="text-[13px] font-bold text-slate-800 leading-snug">{{ session('error') }}</p>
+                </div>
+                <button @click="show = false" class="text-slate-400 hover:text-slate-600 transition-colors mt-1.5 shrink-0">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+            @endif
         </div>
 
         @stack('scripts')

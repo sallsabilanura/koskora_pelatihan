@@ -9,14 +9,14 @@ class PaymentController extends Controller
 {
     public function index()
     {
-        $payments = \App\Models\Payment::with(['rental.tenant.user', 'rental.roomRental.room'])->sortable()->paginate(10);
-        $rentals = \App\Models\Rental::with(['tenant.user', 'roomRental.room'])->get();
+        $payments = \App\Models\Payment::with(['rental.user', 'rental.roomRental.room'])->sortable()->paginate(10);
+        $rentals = \App\Models\Rental::with(['user', 'roomRental.room'])->get();
         return view('admin.payments.index', compact('payments', 'rentals'));
     }
 
     public function create()
     {
-        $rentals = \App\Models\Rental::with(['tenant.user', 'roomRental.room'])->where('status', 'active')->get();
+        $rentals = \App\Models\Rental::with(['user', 'roomRental.room'])->where('status', 'active')->get();
         return view('admin.payments.create', compact('rentals'));
     }
 
@@ -38,14 +38,14 @@ class PaymentController extends Controller
 
     public function show(string $id)
     {
-        $payment = \App\Models\Payment::with(['rental.tenant.user', 'rental.roomRental.room'])->findOrFail($id);
+        $payment = \App\Models\Payment::with(['rental.user', 'rental.roomRental.room'])->findOrFail($id);
         return view('admin.payments.show', compact('payment'));
     }
 
     public function edit(string $id)
     {
         $payment = \App\Models\Payment::findOrFail($id);
-        $rentals = \App\Models\Rental::with(['tenant.user', 'roomRental.room'])->get();
+        $rentals = \App\Models\Rental::with(['user', 'roomRental.room'])->get();
         return view('admin.payments.edit', compact('payment', 'rentals'));
     }
 

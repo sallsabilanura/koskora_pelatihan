@@ -1,7 +1,7 @@
 <x-app-layout>
     @section('header_title', 'Manajemen Pengguna')
 
-    <div class="space-y-6 animate-fade-in" x-data="{ showCreateModal: {{ $errors->any() && !old('_method') ? 'true' : 'false' }} }">
+    <div class="space-y-6 animate-fade-in" x-data="{ showCreateModal: {{ $errors->any() && !old('_method') ? 'true' : 'false' }}, viewPhotoSrc: null }">
         {{-- ===== BREADCRUMB ===== --}}
         <div class="bg-white border-b border-slate-200 px-4 md:px-8 py-4 -mx-4 md:-mx-8 -mt-4 md:-mt-8 flex items-center">
             <nav class="flex text-sm text-slate-500 items-center gap-2">
@@ -25,7 +25,7 @@
                                    placeholder="Cari nama atau email..."
                                    style="padding-left:2.5rem; width:100%; margin:0;" class="form-input rounded-lg border-slate-200">
                         </div>
-                        <button type="submit" class="bg-slate-100 text-slate-600 hover:bg-slate-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors" style="flex-shrink:0; white-space:nowrap;">
+                        <button type="submit" class="bg-brand text-white hover:bg-brand-dark px-4 py-2 rounded-lg text-sm font-medium transition-colors" style="flex-shrink:0; white-space:nowrap;">
                             <i class="fas fa-search" style="font-size:0.75rem;"></i> Filter
                         </button>
                         @if(request()->anyFilled(['search']))
@@ -38,25 +38,11 @@
 
                 <button @click="showCreateModal = true" type="button" class="bg-brand text-white hover:bg-brand-dark px-4 py-2 rounded-lg text-sm font-medium transition-colors flex-shrink-0 flex items-center gap-2">
                     <i class="fas fa-plus text-sm"></i>
-                    Tambah Pengguna
+                    Tambah
                 </button>
             </div>
 
-            @if(session('success'))
-            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
-                 x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                 class="bg-emerald-50 text-emerald-600 p-4 border-b border-emerald-100 text-sm font-medium flex items-center gap-2">
-                <i class="fas fa-check-circle"></i> {{ session('success') }}
-            </div>
-            @endif
 
-            @if(session('error'))
-            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
-                 x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                 class="bg-rose-50 text-rose-600 p-4 border-b border-rose-100 text-sm font-medium flex items-center gap-2">
-                <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
-            </div>
-            @endif
 
             {{-- Table --}}
             <div class="overflow-x-auto border-0 rounded-none shadow-none">
@@ -75,8 +61,12 @@
                             <tr class="hover:bg-slate-50/50 transition-colors" x-data="{ showEditModal: {{ $errors->any() && old('_method') == 'PUT' && old('id') == $user->id ? 'true' : 'false' }}, showDetailModal: false }">
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-full bg-brand/10 text-brand flex items-center justify-center font-bold text-sm">
-                                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                                        <div class="w-10 h-10 rounded-full bg-brand/10 text-brand flex items-center justify-center font-bold text-sm overflow-hidden border border-brand/20 shrink-0">
+                                            @if($user->profile_photo)
+                                                <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="Foto Profil" class="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity" @click.stop="viewPhotoSrc = '{{ asset('storage/' . $user->profile_photo) }}'">
+                                            @else
+                                                {{ strtoupper(substr($user->name, 0, 1)) }}
+                                            @endif
                                         </div>
                                         <div>
                                             <div class="font-semibold text-slate-800">{{ $user->name }}</div>
@@ -158,7 +148,7 @@
                                                 <h3 class="text-[17px] font-bold text-slate-800">Ubah Pengguna</h3>
                                             </div>
 
-                                            <form action="{{ route('admin.users.update', $user->id) }}" method="POST" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto" x-data="{ selectedRole: '{{ old('id') == $user->id ? old('role') : $user->role }}' }">
+                                            <form action="{{ route('admin.users.update', $user->id) }}" method="POST" enctype="multipart/form-data" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto" x-data="{ selectedRole: '{{ old('id') == $user->id ? old('role') : $user->role }}' }">
                                                 @csrf
                                                 @method('PUT')
                                                 <input type="hidden" name="id" value="{{ $user->id }}">
@@ -177,13 +167,21 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="space-y-1.5">
-                                                    <label class="block text-sm font-semibold text-slate-700">Peran <span class="text-rose-500">*</span></label>
-                                                    <select name="role" x-model="selectedRole" class="form-input w-full rounded-xl border-slate-200" required>
-                                                        <option value="tenant">Tenant (Penyewa)</option>
-                                                        <option value="owner">Owner</option>
-                                                    </select>
-                                                    @if(old('id') == $user->id) @error('role') <p class="text-xs text-red-500">{{ $message }}</p> @enderror @endif
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                                    <div class="space-y-1.5">
+                                                        <label class="block text-sm font-semibold text-slate-700">Peran <span class="text-rose-500">*</span></label>
+                                                        <select name="role" x-model="selectedRole" class="form-input w-full rounded-xl border-slate-200" required>
+                                                            <option value="tenant">Tenant (Penyewa)</option>
+                                                            <option value="owner">Owner</option>
+                                                        </select>
+                                                        @if(old('id') == $user->id) @error('role') <p class="text-xs text-red-500">{{ $message }}</p> @enderror @endif
+                                                    </div>
+
+                                                    <div class="space-y-1.5">
+                                                        <label class="block text-sm font-semibold text-slate-700">Ubah Foto Profil</label>
+                                                        <input type="file" name="profile_photo" class="form-input w-full rounded-xl border-slate-200" accept="image/*">
+                                                        <p class="text-xs text-slate-500">Kosongkan jika tidak ingin mengubah. Maks 2MB.</p>
+                                                    </div>
                                                 </div>
 
                                                 <div x-show="selectedRole == 'tenant'" class="space-y-5 border-t border-slate-100 pt-5 mt-5">
@@ -238,8 +236,12 @@
 
                                             <div class="px-6 py-5 overflow-y-auto space-y-4">
                                                 <div class="flex items-center gap-4 border-b border-slate-100 pb-4">
-                                                    <div class="w-16 h-16 rounded-full bg-brand/10 text-brand flex items-center justify-center font-bold text-xl">
-                                                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                                                    <div class="w-16 h-16 rounded-full bg-brand/10 text-brand flex items-center justify-center font-bold text-xl overflow-hidden border border-brand/20 shrink-0">
+                                                        @if($user->profile_photo)
+                                                            <img src="{{ asset('storage/' . $user->profile_photo) }}" alt="Foto Profil" class="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity" @click="viewPhotoSrc = '{{ asset('storage/' . $user->profile_photo) }}'">
+                                                        @else
+                                                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                                                        @endif
                                                     </div>
                                                     <div>
                                                         <div class="font-bold text-slate-800 text-lg">{{ $user->name }}</div>
@@ -331,10 +333,10 @@
                  class="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden text-left flex flex-col max-h-[90vh]">
                 
                 <div class="px-6 pt-5 pb-4 border-b border-slate-100 flex justify-between items-center flex-shrink-0">
-                    <h3 class="text-[17px] font-bold text-slate-800">Tambah Pengguna Baru</h3>
+                    <h3 class="text-[17px] font-bold text-slate-800">Tambah Pengguna</h3>
                 </div>
 
-                <form action="{{ route('admin.users.store') }}" method="POST" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto" x-data="{ selectedRole: '{{ old('role', 'tenant') }}' }">
+                <form action="{{ route('admin.users.store') }}" method="POST" enctype="multipart/form-data" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto" x-data="{ selectedRole: '{{ old('role', 'tenant') }}' }">
                     @csrf
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -351,13 +353,21 @@
                         </div>
                     </div>
 
-                    <div class="space-y-1.5">
-                        <label class="block text-sm font-semibold text-slate-700">Peran <span class="text-rose-500">*</span></label>
-                        <select name="role" x-model="selectedRole" class="form-input w-full rounded-xl border-slate-200" required>
-                            <option value="tenant">Tenant (Penyewa)</option>
-                            <option value="owner">Owner</option>
-                        </select>
-                        @if(!old('id')) @error('role') <p class="text-xs text-red-500">{{ $message }}</p> @enderror @endif
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="space-y-1.5">
+                            <label class="block text-sm font-semibold text-slate-700">Peran <span class="text-rose-500">*</span></label>
+                            <select name="role" x-model="selectedRole" class="form-input w-full rounded-xl border-slate-200" required>
+                                <option value="tenant">Tenant (Penyewa)</option>
+                                <option value="owner">Owner</option>
+                            </select>
+                            @if(!old('id')) @error('role') <p class="text-xs text-red-500">{{ $message }}</p> @enderror @endif
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="block text-sm font-semibold text-slate-700">Foto Profil (Opsional)</label>
+                            <input type="file" name="profile_photo" class="form-input w-full rounded-xl border-slate-200" accept="image/*">
+                            <p class="text-xs text-slate-500">Maksimal 2MB (jpg, jpeg, png).</p>
+                        </div>
                     </div>
 
                     <div x-show="selectedRole == 'tenant'" class="space-y-5 border-t border-slate-100 pt-5 mt-5">
@@ -392,6 +402,24 @@
                 </form>
             </div>
         </div>
+        </template>
+        <!-- Global Photo Viewer Modal -->
+        <template x-teleport="body">
+            <div x-show="viewPhotoSrc" style="display: none;" class="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                <div x-show="viewPhotoSrc" 
+                     x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                     x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                     class="fixed inset-0 bg-black/80 backdrop-blur-sm cursor-pointer" @click="viewPhotoSrc = null"></div>
+                <div x-show="viewPhotoSrc"
+                     x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                     x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                     class="relative z-10 max-w-4xl max-h-[90vh] flex flex-col items-center justify-center">
+                    <button @click="viewPhotoSrc = null" class="absolute -top-12 right-0 text-white hover:text-slate-300 bg-white/10 hover:bg-white/20 w-10 h-10 rounded-full flex items-center justify-center transition-all">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                    <img :src="viewPhotoSrc" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl" alt="Preview Foto" @click.outside="viewPhotoSrc = null">
+                </div>
+            </div>
         </template>
     </div>
 </x-app-layout>

@@ -38,7 +38,7 @@
 
                 <button @click="showCreateModal = true" class="btn btn-primary flex-shrink-0">
                     <i class="fas fa-plus text-sm"></i>
-                    Tambah Properti
+                    Tambah
                 </button>
             </div>
 
@@ -239,7 +239,7 @@
                  class="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden text-left flex flex-col max-h-[90vh]">
                 
                 <div class="px-6 pt-5 pb-4 border-b border-slate-100 flex justify-between items-center flex-shrink-0">
-                    <h3 class="text-[17px] font-bold text-slate-800">Tambah Properti Baru</h3>
+                    <h3 class="text-[17px] font-bold text-slate-800">Tambah Properti</h3>
                 </div>
 
                 <form action="{{ route('admin.properties.store') }}" method="POST" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto">

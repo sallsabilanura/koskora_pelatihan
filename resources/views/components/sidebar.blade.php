@@ -1,4 +1,4 @@
-<div id="sidebar" class="w-[260px] h-screen sticky top-0 z-40 transition-transform duration-300 ease-in-out max-lg:fixed max-lg:-translate-x-full flex flex-col text-slate-500 bg-white border-r border-slate-200">
+<div id="sidebar" class="w-[260px] h-screen fixed lg:sticky top-0 z-[70] transition-transform duration-300 ease-in-out -translate-x-full lg:translate-x-0 flex flex-col text-slate-500 bg-white border-r border-slate-200">
     <div class="p-6 pb-4 flex items-center justify-center border-b border-slate-100 shrink-0">
         <img src="{{ asset('koskora.png') }}" alt="KosKora Logo" class="h-10 w-auto">
     </div>

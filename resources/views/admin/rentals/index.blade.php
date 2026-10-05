@@ -70,7 +70,7 @@
 
                 <button type="button" @click="showCreateModal = true" class="btn btn-primary flex-shrink-0">
                     <i class="fas fa-plus text-sm"></i>
-                    Buat Kontrak Sewa
+                    Tambah
                 </button>
             </div>
 
@@ -254,7 +254,7 @@
              x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
              class="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden text-left flex flex-col max-h-[90vh]">
             <div class="px-6 pt-5 pb-4 border-b border-slate-100 flex justify-between items-center flex-shrink-0">
-                <h3 class="text-[17px] font-bold text-slate-800">Informasi Sewa Baru</h3>
+                <h3 class="text-[17px] font-bold text-slate-800">Informasi Sewa</h3>
             </div>
             <form action="{{ route('admin.rentals.store') }}" method="POST" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto">
                 @csrf

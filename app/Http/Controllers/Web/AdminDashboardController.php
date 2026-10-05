@@ -35,4 +35,12 @@ class AdminDashboardController extends Controller
             'announcementsCount'
         ));
     }
+
+    /**
+     * Show the admin notifications.
+     */
+    public function notifications()
+    {
+        return view('admin.notifications.index');
+    }
 }

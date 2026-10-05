@@ -40,6 +40,7 @@ Route::prefix('admin')->group(function () {
 
         Route::middleware([ForcePasswordChange::class])->group(function () {
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+            Route::get('/notifications', [AdminDashboardController::class, 'notifications'])->name('admin.notifications.index');
 
             // Web Resource Routes
             Route::name('admin.')->group(function () {

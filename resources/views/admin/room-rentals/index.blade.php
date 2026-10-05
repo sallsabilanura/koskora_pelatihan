@@ -38,7 +38,7 @@
 
                 <button type="button" @click="showCreateModal = true" class="btn btn-primary flex-shrink-0">
                     <i class="fas fa-plus text-sm"></i>
-                    Tambah Tipe Sewa
+                    Tambah
                 </button>
             </div>
 
@@ -64,7 +64,7 @@
                                     @foreach($room->roomRentals as $rental)
                                         <div x-data="{ showEditModal: {{ $errors->any() && old('_method') == 'PUT' && old('id') == $rental->id ? 'true' : 'false' }} }" class="flex items-center justify-between p-2 hover:bg-slate-50 rounded-xl transition-all group/rental">
                                             <div class="flex items-center gap-3">
-                                                <div class="w-10 h-10 rounded-lg bg-brand/5 flex items-center justify-center text-brand">
+                                                <div class="w-8 flex items-center justify-center text-brand text-lg">
                                                     <i class="fas fa-tag"></i>
                                                 </div>
                                                 <div>

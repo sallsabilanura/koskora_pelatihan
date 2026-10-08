@@ -17,7 +17,8 @@ class FacilityController extends Controller
                   ->orWhere('description', 'like', '%' . $request->search . '%');
         }
 
-        $facilities = $query->sortable()->paginate(10);
+        $perPage = $request->input('per_page', 10);
+        $facilities = $query->sortable()->paginate($perPage);
         
         return view('admin.facilities.index', compact('facilities'));
     }

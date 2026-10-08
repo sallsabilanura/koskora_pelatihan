@@ -21,7 +21,8 @@ class RoomController extends Controller
             $query->where('status', $request->status);
         }
 
-        $rooms = $query->sortable()->paginate(10);
+        $perPage = request()->input('per_page', 10);
+        $rooms = $query->sortable()->paginate($perPage);
         $districts = collect([]); // mock until District model is clear
         $properties = Property::all();
         $facilities = Facility::all();
@@ -40,7 +41,14 @@ class RoomController extends Controller
     {
         $validated = $request->validate([
             'properties_id' => 'required|exists:properties,id',
-            'room_number' => 'required|string|max:255',
+            'room_number' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('rooms')->where(function ($query) use ($request) {
+                    return $query->where('properties_id', $request->properties_id);
+                })
+            ],
             'floor' => 'required|string|max:255',
             'status' => 'required|in:available,occupied,maintenance',
             'room_type' => 'nullable|string|max:255',
@@ -48,6 +56,8 @@ class RoomController extends Controller
             'image' => 'nullable|image|max:2048',
             'facilities' => 'nullable|array',
             'facilities.*' => 'exists:facilities,id'
+        ], [
+            'room_number.unique' => 'Nomor kamar ini sudah ada di properti yang sama.'
         ]);
 
         if ($request->hasFile('image')) {
@@ -81,7 +91,14 @@ class RoomController extends Controller
     {
         $validated = $request->validate([
             'properties_id' => 'required|exists:properties,id',
-            'room_number' => 'required|string|max:255',
+            'room_number' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('rooms')->where(function ($query) use ($request) {
+                    return $query->where('properties_id', $request->properties_id);
+                })->ignore($id)
+            ],
             'floor' => 'required|string|max:255',
             'status' => 'required|in:available,occupied,maintenance',
             'room_type' => 'nullable|string|max:255',
@@ -89,6 +106,8 @@ class RoomController extends Controller
             'image' => 'nullable|image|max:2048',
             'facilities' => 'nullable|array',
             'facilities.*' => 'exists:facilities,id'
+        ], [
+            'room_number.unique' => 'Nomor kamar ini sudah ada di properti yang sama.'
         ]);
 
         $room = Room::findOrFail($id);

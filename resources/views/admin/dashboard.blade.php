@@ -11,7 +11,7 @@
                         <div class="text-sm font-medium text-slate-500 mb-1">Total Kamar</div>
                         <div class="text-3xl font-semibold text-slate-900 leading-tight tracking-tight">{{ $totalRooms ?? 0 }}</div>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-brand-light text-brand flex items-center justify-center text-xl transition-transform group-hover:rotate-6">
+                    <div class="w-12 h-12 text-brand flex items-center justify-center text-xl transition-transform group-hover:rotate-6">
                         <i class="fas fa-door-open"></i>
                     </div>
                 </div>
@@ -28,7 +28,7 @@
                         <div class="text-sm font-medium text-slate-500 mb-1">Tersedia</div>
                         <div class="text-3xl font-semibold text-amber-500 leading-tight tracking-tight">{{ $availableRooms ?? 0 }}</div>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center text-xl transition-transform group-hover:rotate-6">
+                    <div class="w-12 h-12 text-amber-500 flex items-center justify-center text-xl transition-transform group-hover:rotate-6">
                         <i class="fas fa-check-circle"></i>
                     </div>
                 </div>
@@ -44,7 +44,7 @@
                         <div class="text-sm font-medium text-slate-500 mb-1">Penyewa Aktif</div>
                         <div class="text-3xl font-semibold text-slate-900 leading-tight tracking-tight">{{ $totalTenants ?? 0 }}</div>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center text-xl transition-transform group-hover:rotate-6">
+                    <div class="w-12 h-12 text-rose-500 flex items-center justify-center text-xl transition-transform group-hover:rotate-6">
                         <i class="fas fa-users"></i>
                     </div>
                 </div>
@@ -60,7 +60,7 @@
                         <div class="text-sm font-medium text-slate-500 mb-1">Total Pendapatan</div>
                         <div class="text-3xl font-semibold text-brand leading-tight tracking-tight">Rp {{ number_format($totalRevenue ?? 0, 0, ',', '.') }}</div>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-brand-light text-brand flex items-center justify-center text-xl transition-transform group-hover:rotate-6">
+                    <div class="w-12 h-12 text-brand flex items-center justify-center text-xl transition-transform group-hover:rotate-6">
                         <i class="fas fa-wallet"></i>
                     </div>
                 </div>
@@ -76,7 +76,7 @@
             <div class="space-y-4">
                 <div class="flex items-center justify-between px-2">
                     <h3 class="text-lg font-extrabold text-slate-800 tracking-tight">Pembayaran Terakhir</h3>
-                    <a href="#" class="text-sm font-bold text-brand hover:underline">Lihat Laporan</a>
+                    <a href="{{ route('admin.payments.index') }}" class="text-sm font-bold text-brand hover:underline">Lihat Laporan</a>
                 </div>
                 
                 <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">

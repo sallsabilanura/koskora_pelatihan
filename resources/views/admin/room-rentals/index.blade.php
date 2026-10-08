@@ -1,5 +1,5 @@
 <x-app-layout>
-    @section('header_title', 'Room Rentals Management')
+    @section('header_title', 'Manajemen Tipe Harga Sewa')
 
     <div class="space-y-6 animate-fade-in" x-data="{ showCreateModal: {{ $errors->any() && !old('_method') ? 'true' : 'false' }} }">
         {{-- ===== BREADCRUMB ===== --}}
@@ -24,6 +24,14 @@
                             <input type="text" name="search" value="{{ request('search') }}"
                                    placeholder="Cari tipe sewa..."
                                    style="padding-left:2.5rem; width:100%; margin:0;" class="form-input">
+                        </div>
+                        <div style="position:relative;">
+                            <select name="per_page" onchange="this.form.submit()" class="form-input rounded-xl text-sm" style="margin:0; height: 100%;">
+                                <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10 baris</option>
+                                <option value="15" {{ request('per_page') == 15 ? 'selected' : '' }}>15 baris</option>
+                                <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20 baris</option>
+                                <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 baris</option>
+                            </select>
                         </div>
                         <button type="submit" class="btn btn-primary" style="flex-shrink:0; white-space:nowrap;">
                             <i class="fas fa-search" style="font-size:0.75rem;"></i> Filter
@@ -99,7 +107,8 @@
                                                     <div class="px-6 pt-5 pb-4 border-b border-slate-100 flex justify-between items-center flex-shrink-0">
                                                         <h3 class="text-[17px] font-bold text-slate-800">Ubah Tipe Sewa</h3>
                                                     </div>
-                                                    <form action="{{ route('admin.room-rentals.update', $rental->id) }}" method="POST" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto">
+                                                    <form action="{{ route('admin.room-rentals.update', $rental->id) }}" method="POST" class="flex flex-col flex-1 overflow-hidden min-h-0">
+                                                        <div class="px-6 pt-4 pb-6 space-y-5 overflow-y-auto flex-1">
                                                         @csrf
                                                         @method('PUT')
                                                         <input type="hidden" name="id" value="{{ $rental->id }}">
@@ -130,7 +139,8 @@
                                                             <input type="number" name="price" value="{{ old('id') == $rental->id ? old('price') : (float)$rental->price }}" class="form-input w-full rounded-xl" required min="0" step="0.01">
                                                         </div>
                                                         
-                                                        <div class="pt-2 pb-2 flex items-center justify-end gap-3">
+                                                    </div>
+                                                        <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-white flex-shrink-0">
                                                             <button type="button" @click="showEditModal = false" class="btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-5">Batal</button>
                                                             <button type="submit" class="btn bg-brand text-white hover:bg-brand-dark rounded-xl px-5">Simpan</button>
                                                         </div>
@@ -157,11 +167,11 @@
                 </tbody>
             </table>
         </div>
-        
         </div>
         
-        <div class="flex justify-center p-4 border-t border-slate-100">
-            {{ method_exists($rooms, 'links') ? $rooms->appends(request()->query())->links() : '' }}
+            <div class="flex justify-center p-4 border-t border-slate-100">
+                {{ method_exists($rooms, 'links') ? $rooms->appends(request()->query())->links() : '' }}
+            </div>
         </div>
 
     <!-- Create Modal -->
@@ -178,7 +188,8 @@
             <div class="px-6 pt-5 pb-4 border-b border-slate-100 flex justify-between items-center flex-shrink-0">
                 <h3 class="text-[17px] font-bold text-slate-800">Tambah Tipe Sewa Kamar</h3>
             </div>
-            <form action="{{ route('admin.room-rentals.store') }}" method="POST" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto">
+            <form action="{{ route('admin.room-rentals.store') }}" method="POST" class="flex flex-col flex-1 overflow-hidden min-h-0">
+                <div class="px-6 pt-4 pb-6 space-y-5 overflow-y-auto flex-1">
                 @csrf
                 <div class="space-y-1.5">
                     <label class="block text-sm font-semibold text-slate-700">Kamar <span class="text-rose-500">*</span></label>
@@ -205,7 +216,8 @@
                     <label class="block text-sm font-semibold text-slate-700">Harga (Rp) <span class="text-rose-500">*</span></label>
                     <input type="number" name="price" value="{{ !old('id') ? old('price') : '' }}" class="form-input w-full rounded-xl" required min="0" step="0.01">
                 </div>
-                <div class="pt-2 pb-2 flex items-center justify-end gap-3">
+            </div>
+                <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-white flex-shrink-0">
                     <button type="button" @click="showCreateModal = false" class="btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-5">Batal</button>
                     <button type="submit" class="btn bg-brand text-white hover:bg-brand-dark rounded-xl px-5">Simpan</button>
                 </div>

@@ -44,6 +44,44 @@
         </style>
     </head>
     <body class="font-sans text-slate-900 antialiased bg-[#fdfdfe] overflow-hidden">
+        <!-- Premium Fast Loader -->
+        <style>
+            @keyframes loader-pulse-glow {
+                0%, 100% { filter: drop-shadow(0 0 0 rgba(30, 27, 155, 0)); transform: scale(1); }
+                50% { filter: drop-shadow(0 0 15px rgba(30, 27, 155, 0.5)); transform: scale(1.1); }
+            }
+            .loader-logo-card {
+                animation: loader-pulse-glow 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            }
+            @keyframes loader-bar-fill {
+                0% { width: 0%; }
+                100% { width: 100%; }
+            }
+            .loader-bar-inner {
+                animation: loader-bar-fill 1s ease-in-out forwards;
+            }
+        </style>
+        <div id="koskora-loader" class="fixed inset-0 z-[99999] bg-[#fdfdfe]/90 backdrop-blur-md flex items-center justify-center transition-all duration-500">
+            <div class="relative flex flex-col items-center translate-y-[-10%]">
+                <img src="{{ asset('favicon.png') }}" alt="Loading" class="w-16 h-16 relative z-10 loader-logo-card mb-6">
+                <h2 class="text-[#1e1b9b] font-extrabold tracking-[0.2em] text-xs uppercase mb-4 opacity-80">Koskora</h2>
+                <div class="w-32 h-1 bg-slate-200 rounded-full overflow-hidden">
+                    <div class="h-full bg-[#1e1b9b] loader-bar-inner"></div>
+                </div>
+            </div>
+        </div>
+        <script>
+            window.addEventListener('load', function() {
+                const loader = document.getElementById('koskora-loader');
+                if (loader) {
+                    loader.style.opacity = '0';
+                    loader.style.visibility = 'hidden';
+                    setTimeout(() => {
+                        loader.style.display = 'none';
+                    }, 500);
+                }
+            });
+        </script>
         <div class="h-screen flex flex-col md:flex-row divide-x divide-slate-100">
             <!-- Left Side: Brand Area -->
             <div class="hidden md:flex md:w-2/3 h-full brand-solid brand-pattern relative flex-col justify-between p-16 lg:p-24 shadow-[inset_-20px_0_30px_rgba(0,0,0,0.1)]">

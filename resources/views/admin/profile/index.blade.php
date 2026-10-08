@@ -22,7 +22,7 @@
 
         {{-- SINGLE MAIN CARD --}}
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div class="h-1.5 bg-brand w-full"></div>
+
             
             {{-- PROFILE BANNER (Header section) --}}
             <div class="px-6 py-5 flex items-center gap-4 border-b border-slate-100">

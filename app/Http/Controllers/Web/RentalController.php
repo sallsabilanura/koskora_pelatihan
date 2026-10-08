@@ -12,19 +12,38 @@ class RentalController extends Controller
 {
     public function index()
     {
-        $rentals = Rental::with(['user', 'roomRental.room'])->sortable()->paginate(10);
-        $users = User::where('role', 'tenant')->get();
-        $roomRentals = RoomRental::with('room')->get();
+        $perPage = request()->input('per_page', 10);
+        $rentals = Rental::with(['user', 'roomRental.room'])->sortable()->paginate($perPage);
+        $activeTenantIds = Rental::where('status', 'active')->pluck('user_id')->toArray();
+        $users = User::where('role', 'tenant')->whereNotIn('id', $activeTenantIds)->get();
+        
+        // Get room rentals that are available or occupied (so they can be booked for future dates)
+        $roomRentals = RoomRental::whereHas('room', function ($q) {
+            $q->whereIn('status', ['available', 'occupied']);
+        })->with('room')->get();
 
-        return view('admin.rentals.index', compact('rentals', 'users', 'roomRentals'));
+        // Get booked dates for each room
+        $bookedDates = Rental::whereHas('roomRental')
+            ->with('roomRental')
+            ->where('status', 'active')
+            ->get()
+            ->groupBy('roomRental.room_id')
+            ->map(function($rents) {
+                return $rents->map(function($r) {
+                    return ['from' => $r->start_date, 'to' => $r->end_date];
+                });
+            })->toArray();
+
+        return view('admin.rentals.index', compact('rentals', 'users', 'roomRentals', 'bookedDates'));
     }
 
     public function create()
     {
-        $users = User::where('role', 'tenant')->where('is_active', true)->get();
-        // Only get room rentals for available rooms
+        $activeTenantIds = Rental::where('status', 'active')->pluck('user_id')->toArray();
+        $users = User::where('role', 'tenant')->where('is_active', true)->whereNotIn('id', $activeTenantIds)->get();
+        // Get room rentals for available and occupied rooms
         $roomRentals = RoomRental::whereHas('room', function ($q) {
-            $q->where('status', 'available');
+            $q->whereIn('status', ['available', 'occupied']);
         })->with('room')->get();
 
         return view('admin.rentals.create', compact('users', 'roomRentals'));
@@ -35,7 +54,28 @@ class RentalController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'room_rentals_id' => 'required|exists:room_rentals,id',
-            'start_date' => 'required|date',
+            'start_date' => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->filled('room_rentals_id') && $request->filled('end_date')) {
+                        $requestedRoomRental = \App\Models\RoomRental::find($request->room_rentals_id);
+                        if ($requestedRoomRental) {
+                            $overlapping = \App\Models\Rental::whereHas('roomRental', function($q) use ($requestedRoomRental) {
+                                $q->where('room_id', $requestedRoomRental->room_id);
+                            })
+                            ->where('status', 'active')
+                            ->where('start_date', '<=', $request->end_date)
+                            ->where('end_date', '>=', $value)
+                            ->exists();
+
+                            if ($overlapping) {
+                                $fail('Kamar ini sudah disewa pada rentang tanggal tersebut.');
+                            }
+                        }
+                    }
+                },
+            ],
             'end_date' => 'required|date|after_or_equal:start_date',
             'rental_price' => 'required|numeric|min:0',
         ]);
@@ -65,11 +105,12 @@ class RentalController extends Controller
     public function edit(string $id)
     {
         $rental = Rental::findOrFail($id);
-        $users = User::where('role', 'tenant')->get();
+        $activeTenantIds = Rental::where('status', 'active')->where('id', '!=', $id)->pluck('user_id')->toArray();
+        $users = User::where('role', 'tenant')->whereNotIn('id', $activeTenantIds)->get();
 
-        // Show rentals for available rooms OR the room currently attached to this contract
+        // Show rentals for available and occupied rooms OR the room currently attached to this contract
         $roomRentals = RoomRental::whereHas('room', function ($q) {
-            $q->where('status', 'available');
+            $q->whereIn('status', ['available', 'occupied']);
         })->orWhere('id', $rental->room_rentals_id)
             ->with('room')->get();
 
@@ -81,7 +122,29 @@ class RentalController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'room_rentals_id' => 'required|exists:room_rentals,id',
-            'start_date' => 'required|date',
+            'start_date' => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) use ($request, $id) {
+                    if ($request->filled('room_rentals_id') && $request->filled('end_date')) {
+                        $requestedRoomRental = \App\Models\RoomRental::find($request->room_rentals_id);
+                        if ($requestedRoomRental) {
+                            $overlapping = \App\Models\Rental::whereHas('roomRental', function($q) use ($requestedRoomRental) {
+                                $q->where('room_id', $requestedRoomRental->room_id);
+                            })
+                            ->where('status', 'active')
+                            ->where('id', '!=', $id)
+                            ->where('start_date', '<=', $request->end_date)
+                            ->where('end_date', '>=', $value)
+                            ->exists();
+
+                            if ($overlapping) {
+                                $fail('Kamar ini sudah disewa pada rentang tanggal tersebut.');
+                            }
+                        }
+                    }
+                },
+            ],
             'end_date' => 'required|date|after_or_equal:start_date',
             'rental_price' => 'required|numeric|min:0',
         ]);

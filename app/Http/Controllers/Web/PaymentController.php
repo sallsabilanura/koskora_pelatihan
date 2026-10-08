@@ -9,7 +9,8 @@ class PaymentController extends Controller
 {
     public function index()
     {
-        $payments = \App\Models\Payment::with(['rental.user', 'rental.roomRental.room'])->sortable()->paginate(10);
+        $perPage = request()->input('per_page', 10);
+        $payments = \App\Models\Payment::with(['rental.user', 'rental.roomRental.room'])->sortable()->paginate($perPage);
         $rentals = \App\Models\Rental::with(['user', 'roomRental.room'])->get();
         return view('admin.payments.index', compact('payments', 'rentals'));
     }

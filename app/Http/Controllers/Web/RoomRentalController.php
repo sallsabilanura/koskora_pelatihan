@@ -19,7 +19,8 @@ class RoomRentalController extends Controller
             })->orWhere('room_number', 'like', '%' . $request->search . '%');
         }
         
-        $rooms = $query->sortable()->paginate(10);
+        $perPage = request()->input('per_page', 10);
+        $rooms = $query->sortable()->paginate($perPage);
         $allRooms = Room::with('property')->get();
         return view('admin.room-rentals.index', compact('rooms', 'allRooms'));
     }

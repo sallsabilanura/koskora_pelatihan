@@ -1,18 +1,57 @@
 <x-app-layout>
-    @section('header_title', 'Rentals Management')
+    @section('header_title', 'Manajemen Kontrak Sewa')
 
-    <div class="space-y-6 animate-fade-in" x-data="{
+    <div class="space-y-6 animate-fade-in" x-init="initPickers()" x-data="{
         showCreateModal: {{ $errors->any() && !old('_method') ? 'true' : 'false' }},
         rentalType: '',
+        roomId: '',
         basePrice: 0,
         startDate: '{{ old('start_date', date('Y-m-d')) }}',
         endDate: '{{ old('end_date') }}',
         price: '{{ old('rental_price') }}',
+        fpStart: null,
+        fpEnd: null,
+        initPickers() {
+            let self = this;
+            this.$nextTick(() => {
+                let disabledRanges = [];
+                if (this.roomId && window.allBookedDates[this.roomId]) {
+                    disabledRanges = window.allBookedDates[this.roomId].map(d => ({from: d.from, to: d.to}));
+                }
+                this.fpStart = flatpickr(this.$refs.startDateInput, {
+                    dateFormat: 'Y-m-d',
+                    defaultDate: this.startDate,
+                    disable: disabledRanges,
+                    onChange: function(selDates, dateStr) {
+                        self.startDate = dateStr;
+                        if (self.fpEnd) self.fpEnd.set('minDate', dateStr);
+                        self.calc();
+                    }
+                });
+                this.fpEnd = flatpickr(this.$refs.endDateInput, {
+                    dateFormat: 'Y-m-d',
+                    defaultDate: this.endDate,
+                    minDate: this.startDate,
+                    disable: disabledRanges,
+                    onChange: function(selDates, dateStr) {
+                        self.endDate = dateStr;
+                        self.calc();
+                    }
+                });
+            });
+        },
         updateRoom(e) {
             let opt = e.target.options[e.target.selectedIndex];
             if(!opt) return;
             this.rentalType = opt.dataset.type || '';
             this.basePrice = parseFloat(opt.dataset.price || 0);
+            this.roomId = opt.dataset.roomid || '';
+            let disabledRanges = [];
+            if (this.roomId && window.allBookedDates[this.roomId]) {
+                disabledRanges = window.allBookedDates[this.roomId].map(d => ({from: d.from, to: d.to}));
+            }
+            if (this.fpStart) this.fpStart.set('disable', disabledRanges);
+            if (this.fpEnd) this.fpEnd.set('disable', disabledRanges);
             this.calc();
         },
         calc() {
@@ -57,6 +96,14 @@
                                    placeholder="Cari ID Sewa atau nama penyewa..."
                                    style="padding-left:2.5rem; width:100%; margin:0;" class="form-input">
                         </div>
+                        <div style="position:relative;">
+                            <select name="per_page" onchange="this.form.submit()" class="form-input rounded-xl text-sm" style="margin:0; height: 100%;">
+                                <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10 baris</option>
+                                <option value="15" {{ request('per_page') == 15 ? 'selected' : '' }}>15 baris</option>
+                                <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20 baris</option>
+                                <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 baris</option>
+                            </select>
+                        </div>
                         <button type="submit" class="btn btn-primary" style="flex-shrink:0; white-space:nowrap;">
                             <i class="fas fa-search" style="font-size:0.75rem;"></i> Filter
                         </button>
@@ -88,18 +135,57 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($rentals as $item)
-                        <tr class="hover:bg-slate-50 transition-colors" x-data="{ 
+                        <tr class="hover:bg-slate-50 transition-colors" x-init="eInitPickers()" x-data="{ 
                             showEditModal: {{ $errors->any() && old('_method') == 'PUT' && old('id') == $item->id ? 'true' : 'false' }},
                             eRentalType: '{{ strtolower($item->roomRental->rental_type ?? '') }}',
+                            eRoomId: '{{ $item->roomRental->room_id ?? '' }}',
                             eBasePrice: {{ (float)($item->roomRental->price ?? 0) }},
                             eStartDate: '{{ old('id') == $item->id ? old('start_date') : $item->start_date }}',
                             eEndDate: '{{ old('id') == $item->id ? old('end_date') : $item->end_date }}',
                             ePrice: '{{ old('id') == $item->id ? old('rental_price') : $item->rental_price }}',
+                            efpStart: null,
+                            efpEnd: null,
+                            eInitPickers() {
+                                let self = this;
+                                this.$nextTick(() => {
+                                    let disabledRanges = [];
+                                    if (this.eRoomId && window.allBookedDates[this.eRoomId]) {
+                                        disabledRanges = window.allBookedDates[this.eRoomId].filter(d => d.from !== '{{ $item->start_date }}' || d.to !== '{{ $item->end_date }}').map(d => ({from: d.from, to: d.to}));
+                                    }
+                                    this.efpStart = flatpickr(this.$refs.eStartDateInput, {
+                                        dateFormat: 'Y-m-d',
+                                        defaultDate: this.eStartDate,
+                                        disable: disabledRanges,
+                                        onChange: function(selDates, dateStr) {
+                                            self.eStartDate = dateStr;
+                                            if (self.efpEnd) self.efpEnd.set('minDate', dateStr);
+                                            self.eCalc();
+                                        }
+                                    });
+                                    this.efpEnd = flatpickr(this.$refs.eEndDateInput, {
+                                        dateFormat: 'Y-m-d',
+                                        defaultDate: this.eEndDate,
+                                        minDate: this.eStartDate,
+                                        disable: disabledRanges,
+                                        onChange: function(selDates, dateStr) {
+                                            self.eEndDate = dateStr;
+                                            self.eCalc();
+                                        }
+                                    });
+                                });
+                            },
                             eUpdateRoom(e) {
                                 let opt = e.target.options[e.target.selectedIndex];
                                 if(!opt) return;
                                 this.eRentalType = opt.dataset.type || '';
                                 this.eBasePrice = parseFloat(opt.dataset.price || 0);
+                                this.eRoomId = opt.dataset.roomid || '';
+                                let disabledRanges = [];
+                                if (this.eRoomId && window.allBookedDates[this.eRoomId]) {
+                                    disabledRanges = window.allBookedDates[this.eRoomId].filter(d => d.from !== '{{ $item->start_date }}' || d.to !== '{{ $item->end_date }}').map(d => ({from: d.from, to: d.to}));
+                                }
+                                if (this.efpStart) this.efpStart.set('disable', disabledRanges);
+                                if (this.efpEnd) this.efpEnd.set('disable', disabledRanges);
                                 this.eCalc();
                             },
                             eCalc() {
@@ -169,7 +255,8 @@
                                         <div class="px-6 pt-5 pb-4 border-b border-slate-100 flex justify-between items-center flex-shrink-0">
                                             <h3 class="text-[17px] font-bold text-slate-800">Ubah Kontrak Sewa</h3>
                                         </div>
-                                        <form action="{{ route('admin.rentals.update', $item->id) }}" method="POST" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto">
+                                        <form action="{{ route('admin.rentals.update', $item->id) }}" method="POST" class="flex flex-col flex-1 overflow-hidden min-h-0">
+                                            <div class="px-6 pt-4 pb-6 space-y-5 overflow-y-auto flex-1">
                                             @csrf
                                             @method('PUT')
                                             <input type="hidden" name="id" value="{{ $item->id }}">
@@ -189,17 +276,17 @@
                                                     <select name="room_rentals_id" class="form-input w-full rounded-xl" @change="eUpdateRoom" required>
                                                         @php $currRoom = old('id') == $item->id ? old('room_rentals_id') : $item->room_rentals_id; @endphp
                                                         @foreach($roomRentals as $rr)
-                                                            <option value="{{ $rr->id }}" data-type="{{ strtolower($rr->rental_type) }}" data-price="{{ $rr->price }}" {{ $currRoom == $rr->id ? 'selected' : '' }}>Kamar #{{ $rr->room->room_number ?? '?' }} - {{ ucfirst($rr->rental_type) }} (Rp {{ number_format($rr->price, 0, ',', '.') }})</option>
+                                                            <option value="{{ $rr->id }}" data-type="{{ strtolower($rr->rental_type) }}" data-price="{{ $rr->price }}" data-roomid="{{ $rr->room->id ?? '' }}" {{ $currRoom == $rr->id ? 'selected' : '' }}>Kamar #{{ $rr->room->room_number ?? '?' }} - {{ ucfirst($rr->rental_type) }} (Rp {{ number_format($rr->price, 0, ',', '.') }})</option>
                                                         @endforeach
                                                     </select>
                                                 </div>
                                                 <div class="space-y-1.5">
                                                     <label class="block text-sm font-semibold text-slate-700">Tanggal Mulai <span class="text-rose-500">*</span></label>
-                                                    <input type="date" name="start_date" x-model="eStartDate" @change="eCalc" class="form-input w-full rounded-xl" required>
+                                                    <input type="text" name="start_date" x-ref="eStartDateInput" x-model="eStartDate" class="form-input w-full rounded-xl bg-white" required>
                                                 </div>
                                                 <div class="space-y-1.5">
                                                     <label class="block text-sm font-semibold text-slate-700">Tanggal Berakhir <span class="text-rose-500">*</span></label>
-                                                    <input type="date" name="end_date" x-model="eEndDate" @change="eCalc" :min="eStartDate" class="form-input w-full rounded-xl" required>
+                                                    <input type="text" name="end_date" x-ref="eEndDateInput" x-model="eEndDate" class="form-input w-full rounded-xl bg-white" required>
                                                 </div>
                                                 <div class="space-y-1.5">
                                                     <label class="block text-sm font-semibold text-slate-700">Harga Kesepakatan (Rp) <span class="text-rose-500">*</span></label>
@@ -210,7 +297,8 @@
                                                 </div>
                                             </div>
                                             
-                                            <div class="pt-2 pb-2 flex items-center justify-end gap-3">
+                                        </div>
+                                            <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-white flex-shrink-0">
                                                 <button type="button" @click="showEditModal = false" class="btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-5">Batal</button>
                                                 <button type="submit" class="btn bg-brand text-white hover:bg-brand-dark rounded-xl px-5">Simpan</button>
                                             </div>
@@ -235,11 +323,11 @@
                 </tbody>
             </table>
         </div>
-        
         </div>
         
-        <div class="flex justify-center p-4 border-t border-slate-100">
-            {{ method_exists($rentals, 'links') ? $rentals->appends(request()->query())->links() : '' }}
+            <div class="flex justify-center p-4 border-t border-slate-100">
+                {{ method_exists($rentals, 'links') ? $rentals->appends(request()->query())->links() : '' }}
+            </div>
         </div>
 
     <!-- Create Modal -->
@@ -256,7 +344,8 @@
             <div class="px-6 pt-5 pb-4 border-b border-slate-100 flex justify-between items-center flex-shrink-0">
                 <h3 class="text-[17px] font-bold text-slate-800">Informasi Sewa</h3>
             </div>
-            <form action="{{ route('admin.rentals.store') }}" method="POST" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto">
+            <form action="{{ route('admin.rentals.store') }}" method="POST" class="flex flex-col flex-1 overflow-hidden min-h-0">
+                <div class="px-6 pt-4 pb-6 space-y-5 overflow-y-auto flex-1">
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-1.5 md:col-span-2">
@@ -273,24 +362,25 @@
                         <select name="room_rentals_id" class="form-input w-full rounded-xl" @change="updateRoom" required>
                             <option value="">Pilih Kamar & Harga...</option>
                             @foreach($roomRentals as $rr)
-                                <option value="{{ $rr->id }}" data-type="{{ strtolower($rr->rental_type) }}" data-price="{{ $rr->price }}" {{ (!old('id') && old('room_rentals_id') == $rr->id) ? 'selected' : '' }}>Kamar #{{ $rr->room->room_number ?? '?' }} - {{ ucfirst($rr->rental_type) }} (Rp {{ number_format($rr->price, 0, ',', '.') }})</option>
+                                <option value="{{ $rr->id }}" data-type="{{ strtolower($rr->rental_type) }}" data-price="{{ $rr->price }}" data-roomid="{{ $rr->room->id ?? '' }}" {{ (!old('id') && old('room_rentals_id') == $rr->id) ? 'selected' : '' }}>Kamar #{{ $rr->room->room_number ?? '?' }} - {{ ucfirst($rr->rental_type) }} (Rp {{ number_format($rr->price, 0, ',', '.') }})</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-sm font-semibold text-slate-700">Tanggal Mulai <span class="text-rose-500">*</span></label>
-                        <input type="date" name="start_date" x-model="startDate" @change="calc" class="form-input w-full rounded-xl" required>
+                        <input type="text" name="start_date" x-ref="startDateInput" x-model="startDate" class="form-input w-full rounded-xl bg-white" required>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-sm font-semibold text-slate-700">Tanggal Berakhir <span class="text-rose-500">*</span></label>
-                        <input type="date" name="end_date" x-model="endDate" @change="calc" :min="startDate" class="form-input w-full rounded-xl" required>
+                        <input type="text" name="end_date" x-ref="endDateInput" x-model="endDate" class="form-input w-full rounded-xl bg-white" required>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-sm font-semibold text-slate-700">Harga Kesepakatan (Rp) <span class="text-rose-500">*</span></label>
                         <input type="number" name="rental_price" x-model="price" class="form-input w-full rounded-xl" placeholder="Contoh: 1500000" required min="0" step="0.01">
                     </div>
                 </div>
-                <div class="pt-2 pb-2 flex items-center justify-end gap-3">
+            </div>
+                <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-white flex-shrink-0">
                     <button type="button" @click="showCreateModal = false" class="btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-5">Batal</button>
                     <button type="submit" class="btn bg-brand text-white hover:bg-brand-dark rounded-xl px-5">Simpan</button>
                 </div>
@@ -299,5 +389,7 @@
     </div>
     </template>
     </div>
+    <script>
+        window.allBookedDates = {!! json_encode($bookedDates) !!};
+    </script>
 </x-app-layout>
-

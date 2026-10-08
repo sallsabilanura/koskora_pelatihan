@@ -1,5 +1,5 @@
 <x-app-layout>
-    @section('header_title', 'Rooms Management')
+    @section('header_title', 'Manajemen Kamar')
 
     <div class="space-y-6 animate-fade-in" x-data="{ showCreateModal: {{ $errors->any() && !old('_method') ? 'true' : 'false' }} }">
         {{-- ===== BREADCRUMB ===== --}}
@@ -25,6 +25,14 @@
                             <input type="text" name="search" value="{{ request('search') }}"
                                    placeholder="Cari nomor, properti..."
                                    style="padding-left:2.5rem; width:100%; margin:0;" class="form-input">
+                        </div>
+                        <div style="position:relative;">
+                            <select name="per_page" onchange="this.form.submit()" class="form-input rounded-xl text-sm" style="margin:0; height: 100%;">
+                                <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10 baris</option>
+                                <option value="15" {{ request('per_page') == 15 ? 'selected' : '' }}>15 baris</option>
+                                <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20 baris</option>
+                                <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 baris</option>
+                            </select>
                         </div>
                         {{-- Filter Dropdown --}}
                         <div class="relative" x-data="{ open: false }" @click.away="open = false">
@@ -260,7 +268,8 @@
                                         <div class="px-6 pt-5 pb-4 border-b border-slate-100 flex justify-between items-center flex-shrink-0">
                                             <h3 class="text-[17px] font-bold text-slate-800">Ubah Kamar</h3>
                                         </div>
-                                        <form action="{{ route('admin.rooms.update', $room->id) }}" method="POST" enctype="multipart/form-data" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto">
+                                        <form action="{{ route('admin.rooms.update', $room->id) }}" method="POST" enctype="multipart/form-data" class="flex flex-col flex-1 overflow-hidden min-h-0">
+                                            <div class="px-6 pt-4 pb-6 space-y-5 overflow-y-auto flex-1">
                                             @csrf
                                             @method('PUT')
                                             <input type="hidden" name="id" value="{{ $room->id }}">
@@ -269,6 +278,7 @@
                                                 <div class="space-y-1.5">
                                                     <label class="block text-sm font-semibold text-slate-700">Nomor Kamar <span class="text-rose-500">*</span></label>
                                                     <input type="text" name="room_number" value="{{ old('id') == $room->id ? old('room_number') : $room->room_number }}" class="form-input w-full rounded-xl" required>
+                                                    @if(old('id') == $room->id) @error('room_number') <p class="text-xs text-rose-500">{{ $message }}</p> @enderror @endif
                                                 </div>
                                                 <div class="space-y-1.5">
                                                     <label class="block text-sm font-semibold text-slate-700">Lantai <span class="text-rose-500">*</span></label>
@@ -309,7 +319,8 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="pt-2 pb-2 flex items-center justify-end gap-3">
+                                        </div>
+                                            <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-white flex-shrink-0">
                                                 <button type="button" @click="showEditModal = false" class="btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-5">Batal</button>
                                                 <button type="submit" class="btn bg-brand text-white hover:bg-brand-dark rounded-xl px-5">Simpan</button>
                                             </div>
@@ -336,10 +347,9 @@
         </div>
 
         {{-- ===== PAGINATION ===== --}}
-        </div>
-        
-        <div class="flex justify-center p-4 border-t border-slate-100">
-            {{ method_exists($rooms, 'links') ? $rooms->appends(request()->query())->links() : '' }}
+            <div class="flex justify-center p-4 border-t border-slate-100">
+                {{ method_exists($rooms, 'links') ? $rooms->appends(request()->query())->links() : '' }}
+            </div>
         </div>
 
     <!-- Create Modal -->
@@ -356,12 +366,14 @@
             <div class="px-6 pt-5 pb-4 border-b border-slate-100 flex justify-between items-center flex-shrink-0">
                 <h3 class="text-[17px] font-bold text-slate-800">Tambah Kamar</h3>
             </div>
-            <form action="{{ route('admin.rooms.store') }}" method="POST" enctype="multipart/form-data" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto">
+            <form action="{{ route('admin.rooms.store') }}" method="POST" enctype="multipart/form-data" class="flex flex-col flex-1 overflow-hidden min-h-0">
+                <div class="px-6 pt-4 pb-6 space-y-5 overflow-y-auto flex-1">
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-1.5">
                         <label class="block text-sm font-semibold text-slate-700">Nomor Kamar <span class="text-rose-500">*</span></label>
                         <input type="text" name="room_number" value="{{ !old('id') ? old('room_number') : '' }}" class="form-input w-full rounded-xl" placeholder="Contoh: A1, 101" required>
+                        @if(!old('id')) @error('room_number') <p class="text-xs text-rose-500">{{ $message }}</p> @enderror @endif
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-sm font-semibold text-slate-700">Lantai <span class="text-rose-500">*</span></label>
@@ -398,7 +410,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="pt-2 pb-2 flex items-center justify-end gap-3">
+            </div>
+                <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-white flex-shrink-0">
                     <button type="button" @click="showCreateModal = false" class="btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-5">Batal</button>
                     <button type="submit" class="btn bg-brand text-white hover:bg-brand-dark rounded-xl px-5">Simpan</button>
                 </div>

@@ -18,8 +18,9 @@ class PropertyController extends Controller
                 ->orWhere('address', 'like', '%'.$request->search.'%');
         }
 
-        $properties = $query->sortable()->paginate(10);
-        $users = User::all();
+        $perPage = request()->input('per_page', 10);
+        $properties = $query->sortable()->paginate($perPage);
+        $users = User::where('role', 'owner')->get();
 
         return view('admin.properties.index', compact('properties', 'users'));
     }

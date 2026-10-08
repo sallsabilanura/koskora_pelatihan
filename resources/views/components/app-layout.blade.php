@@ -18,6 +18,8 @@
         <!-- Design System & Logic -->
         <script src="https://cdn.tailwindcss.com"></script>
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
         <link rel="stylesheet" href="{{ asset('dashboard.css') }}?v={{ time() }}">
         
         <style>
@@ -69,6 +71,44 @@
         </style>
     </head>
     <body class="font-sans antialiased selection:bg-brand/10 selection:text-brand bg-slate-50 text-slate-600">
+        <!-- Premium Fast Loader -->
+        <style>
+            @keyframes loader-pulse-glow {
+                0%, 100% { filter: drop-shadow(0 0 0 rgba(30, 27, 155, 0)); transform: scale(1); }
+                50% { filter: drop-shadow(0 0 15px rgba(30, 27, 155, 0.5)); transform: scale(1.1); }
+            }
+            .loader-logo-card {
+                animation: loader-pulse-glow 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            }
+            @keyframes loader-bar-fill {
+                0% { width: 0%; }
+                100% { width: 100%; }
+            }
+            .loader-bar-inner {
+                animation: loader-bar-fill 1s ease-in-out forwards;
+            }
+        </style>
+        <div id="koskora-loader" class="fixed inset-0 z-[99999] bg-slate-50/90 backdrop-blur-md flex items-center justify-center transition-all duration-500">
+            <div class="relative flex flex-col items-center translate-y-[-10%]">
+                <img src="{{ asset('favicon.png') }}" alt="Loading" class="w-16 h-16 relative z-10 loader-logo-card mb-6">
+                <h2 class="text-brand font-extrabold tracking-[0.2em] text-xs uppercase mb-4 opacity-80">Koskora</h2>
+                <div class="w-32 h-1 bg-slate-200 rounded-full overflow-hidden">
+                    <div class="h-full bg-brand loader-bar-inner"></div>
+                </div>
+            </div>
+        </div>
+        <script>
+            window.addEventListener('load', function() {
+                const loader = document.getElementById('koskora-loader');
+                if (loader) {
+                    loader.style.opacity = '0';
+                    loader.style.visibility = 'hidden';
+                    setTimeout(() => {
+                        loader.style.display = 'none';
+                    }, 500);
+                }
+            });
+        </script>
         <div class="flex min-h-screen overflow-hidden bg-slate-50">
             <!-- Sidebar Overlay (mobile) -->
             <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/20 backdrop-blur-[2px] z-[60] opacity-0 pointer-events-none transition-opacity duration-300 lg:hidden" onclick="closeSidebar()"></div>

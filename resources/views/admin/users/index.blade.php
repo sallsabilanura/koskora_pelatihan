@@ -25,6 +25,14 @@
                                    placeholder="Cari nama atau email..."
                                    style="padding-left:2.5rem; width:100%; margin:0;" class="form-input rounded-lg border-slate-200">
                         </div>
+                        <div style="position:relative;">
+                            <select name="per_page" onchange="this.form.submit()" class="form-input rounded-lg border-slate-200 text-sm" style="margin:0; height: 100%;">
+                                <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10 baris</option>
+                                <option value="15" {{ request('per_page') == 15 ? 'selected' : '' }}>15 baris</option>
+                                <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20 baris</option>
+                                <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 baris</option>
+                            </select>
+                        </div>
                         <button type="submit" class="bg-brand text-white hover:bg-brand-dark px-4 py-2 rounded-lg text-sm font-medium transition-colors" style="flex-shrink:0; white-space:nowrap;">
                             <i class="fas fa-search" style="font-size:0.75rem;"></i> Filter
                         </button>
@@ -148,7 +156,8 @@
                                                 <h3 class="text-[17px] font-bold text-slate-800">Ubah Pengguna</h3>
                                             </div>
 
-                                            <form action="{{ route('admin.users.update', $user->id) }}" method="POST" enctype="multipart/form-data" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto" x-data="{ selectedRole: '{{ old('id') == $user->id ? old('role') : $user->role }}' }">
+                                            <form action="{{ route('admin.users.update', $user->id) }}" method="POST" enctype="multipart/form-data" class="flex flex-col flex-1 overflow-hidden min-h-0" x-data="{ selectedRole: '{{ old('id') == $user->id ? old('role') : $user->role }}' }">
+                                                <div class="px-6 pt-4 pb-6 space-y-5 overflow-y-auto flex-1">
                                                 @csrf
                                                 @method('PUT')
                                                 <input type="hidden" name="id" value="{{ $user->id }}">
@@ -205,7 +214,8 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="pt-2 pb-2 flex items-center justify-end gap-3">
+                                            </div>
+                                                <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-white flex-shrink-0">
                                                     <button type="button" @click="showEditModal = false" class="btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-5 py-2 text-sm font-medium transition-colors">Batal</button>
                                                     <button type="submit" class="btn bg-brand text-white hover:bg-brand-dark rounded-xl px-5 py-2 text-sm font-medium transition-colors">Simpan</button>
                                                 </div>
@@ -312,7 +322,6 @@
                     </tbody>
                 </table>
             </div>
-            
             <div class="flex justify-center p-4 border-t border-slate-100">
                 {{ method_exists($users, 'links') ? $users->appends(request()->query())->links() : '' }}
             </div>
@@ -336,7 +345,8 @@
                     <h3 class="text-[17px] font-bold text-slate-800">Tambah Pengguna</h3>
                 </div>
 
-                <form action="{{ route('admin.users.store') }}" method="POST" enctype="multipart/form-data" class="px-6 pt-2 pb-6 space-y-5 overflow-y-auto" x-data="{ selectedRole: '{{ old('role', 'tenant') }}' }">
+                <form action="{{ route('admin.users.store') }}" method="POST" enctype="multipart/form-data" class="flex flex-col flex-1 overflow-hidden min-h-0" x-data="{ selectedRole: '{{ old('role', 'tenant') }}' }">
+                    <div class="px-6 pt-4 pb-6 space-y-5 overflow-y-auto flex-1">
                     @csrf
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -392,7 +402,8 @@
                     </div>
 
 
-                    <div class="pt-2 pb-2 flex items-center justify-end gap-3">
+                </div>
+                    <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-white flex-shrink-0">
                         <button type="button" @click="showCreateModal = false" class="btn bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-5 py-2 text-sm font-medium transition-colors">Batal</button>
                         
                         <button type="submit" name="action" value="save" class="btn bg-brand text-white hover:bg-brand-dark rounded-xl px-5 py-2 text-sm font-medium transition-colors">

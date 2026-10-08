@@ -25,7 +25,8 @@ class UserController extends Controller
             });
         }
 
-        $users = $query->sortable()->paginate(10);
+        $perPage = request()->input('per_page', 10);
+        $users = $query->sortable()->paginate($perPage);
 
         return view('admin.users.index', compact('users'));
     }
@@ -78,9 +79,12 @@ class UserController extends Controller
             'profile_photo' => $photoPath,
         ]);
 
-        Mail::to($user->email)->send(new UserCreatedMail($user, '12345678'));
-
-        return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil ditambahkan dan email telah dikirim');
+        try {
+            Mail::to($user->email)->send(new UserCreatedMail($user, '12345678'));
+            return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil ditambahkan dan email telah dikirim');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.users.index')->with('success', 'Pengguna berhasil ditambahkan, namun gagal mengirim email (cek koneksi/mailtrap).');
+        }
     }
 
     public function update(Request $request, User $user)
@@ -165,9 +169,12 @@ class UserController extends Controller
             'must_change_password' => true,
         ]);
 
-        Mail::to($user->email)->send(new PasswordResetMail($user, '12345678'));
-
-        return redirect()->route('admin.users.index')->with('success', 'Password pengguna '.$user->name.' berhasil direset ke 12345678 dan email pemberitahuan telah dikirim');
+        try {
+            Mail::to($user->email)->send(new PasswordResetMail($user, '12345678'));
+            return redirect()->route('admin.users.index')->with('success', 'Password pengguna '.$user->name.' berhasil direset ke 12345678 dan email pemberitahuan telah dikirim');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.users.index')->with('success', 'Password pengguna '.$user->name.' berhasil direset ke 12345678, namun gagal mengirim email pemberitahuan.');
+        }
     }
 
     public function toggleStatus(User $user)
